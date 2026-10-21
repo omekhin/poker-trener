@@ -21,7 +21,7 @@
   function badge(){
     var nav=document.querySelector('.sitenav'); if(!nav) return; var i=info();
     var a=nav.querySelector('.streak'); if(!a){ a=document.createElement('a'); a.className='streak'; a.href='stats.html#streak'; nav.appendChild(a); }
-    if(!nav.querySelector('.fbk')){ var f=document.createElement('a'); f.className='fbk'; f.href='https://t.me/ilya21314'; f.target='_blank'; f.rel='noopener'; f.textContent='Отзыв'; f.title='Написать автору в Telegram'; nav.insertBefore(f,a); }
+    if(!nav.querySelector('.fbk')){ var f=document.createElement('a'); f.className='fbk'; f.href='https://t.me/ilya21314'; f.target='_blank'; f.rel='noopener'; f.textContent='Отзыв'; f.title='Написать автору в Telegram'; f.addEventListener('click',function(){ mgoal('feedback'); }); nav.insertBefore(f,a); }
     a.classList.toggle('done',i.doneToday);
     a.title=i.doneToday?'Цель дня выполнена. Серия: '+i.streak:'Сегодня '+i.today+' из '+i.goal+'. Серия: '+i.streak;
     a.setAttribute('aria-label',a.title);
@@ -30,11 +30,13 @@
   function track(kind,n){
     var D=load(), t=today(), o=D[t]||(D[t]={}); var before=total(o)>=goal();
     o[kind]=(o[kind]||0)+(n||1); save(D);
-    if(!before&&total(o)>=goal()){ var s=info().streak; toast('Цель дня выполнена! Серия: '+s+' '+plural(s,['день','дня','дней'])+' подряд'); }
+    try{ var sk='flop_s_'+kind, c=(+sessionStorage.getItem(sk)||0)+1; sessionStorage.setItem(sk,c); var nm={h:'hand',o:'outs',p:'pushfold'}[kind]; if(c===1||c===10||c===50) mgoal(nm+'_'+c); }catch(e){}
+    if(!before&&total(o)>=goal()){ var s=info().streak; mgoal('daily_goal',{streak:s}); toast('Цель дня выполнена! Серия: '+s+' '+plural(s,['день','дня','дней'])+' подряд'); }
     badge();
   }
   function plural(n,f){ n=Math.abs(n)%100; var n1=n%10; if(n>10&&n<20) return f[2]; if(n1>1&&n1<5) return f[1]; if(n1===1) return f[0]; return f[2]; }
-  window.Flop={track:track,info:info,goal:goal,setGoal:function(g){ try{ localStorage.setItem(GKEY,String(g)); }catch(e){} badge(); },today:today,shift:shift,total:total,plural:plural,badge:badge};
+  function mgoal(n,p){ try{ if(window.ym) ym(113725607,'reachGoal',n,p||{}); }catch(e){} }
+  window.Flop={ev:mgoal,track:track,info:info,goal:goal,setGoal:function(g){ try{ localStorage.setItem(GKEY,String(g)); }catch(e){} badge(); },today:today,shift:shift,total:total,plural:plural,badge:badge};
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',badge); else badge();
 })();
 
@@ -42,21 +44,23 @@
    Пока METRIKA_ID пустой, ничего не загружается и баннер не показывается.
    Чтобы включить: создай счётчик на metrika.yandex.ru и впиши его номер ниже. */
 (function(){
-  var METRIKA_ID = '';
+  var METRIKA_ID = '113725607';
   if(!METRIKA_ID) return;
   (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();
    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-   (window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');
-  ym(Number(METRIKA_ID),'init',{clickmap:true,trackLinks:true,accurateTrackBounce:true});
+   (window,document,'script','https://mc.yandex.ru/metrika/tag.js?id='+METRIKA_ID,'ym');
+  ym(Number(METRIKA_ID),'init',{ssr:true,webvisor:true,clickmap:true,referrer:document.referrer,url:location.href,accurateTrackBounce:true,trackLinks:true});
   var ok=false; try{ ok=localStorage.getItem('cookie_ok')==='1'; }catch(e){}
   if(ok) return;
   var b=document.createElement('div');
   b.setAttribute('role','region'); b.setAttribute('aria-label','Уведомление о cookies');
-  b.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;margin:0 auto;z-index:99;background:#141a17;color:#eef1ef;border-radius:14px;padding:14px 16px;font:14px/1.45 Onest,system-ui,sans-serif;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:0 10px 30px rgba(0,0,0,.25)';
-  b.innerHTML='<span style="flex:1 1 260px">Сайт использует cookies и Яндекс Метрику, чтобы считать посещения. <a href="privacy.html" style="color:#9fd8bc">Подробнее</a></span><button type="button" style="min-height:40px;padding:0 18px;border-radius:10px;border:0;background:#47b383;color:#06140d;font:600 14px Onest,system-ui,sans-serif;cursor:pointer">Понятно</button>';
+  b.style.cssText='position:relative;margin:4px 0 10px;z-index:1;background:#141a17;color:#eef1ef;border-radius:12px;padding:9px 12px;font:13px/1.4 Onest,system-ui,sans-serif;display:flex;gap:10px;flex-wrap:nowrap;align-items:center;flex-wrap:wrap;';
+  b.innerHTML='<span style="flex:1 1 auto">Сайт использует cookies и Яндекс Метрику, чтобы становиться удобнее. Личные данные не собираются. <a href="privacy.html" style="color:#9fd8bc">Подробнее</a></span><button type="button" style="min-height:34px;padding:0 14px;border-radius:9px;flex:0 0 auto;border:0;background:#47b383;color:#06140d;font:600 14px Onest,system-ui,sans-serif;cursor:pointer">Понятно</button>';
   b.querySelector('button').onclick=function(){ try{ localStorage.setItem('cookie_ok','1'); }catch(e){} b.remove(); };
-  document.addEventListener('DOMContentLoaded',function(){ document.body.appendChild(b); });
-  if(document.readyState!=='loading') document.body.appendChild(b);
+  function place(){ if(b.isConnected) return; var nav=document.querySelector('.sitenav')||document.querySelector('.topbar');
+    if(nav&&nav.classList.contains('topbar')){ b.style.margin='8px auto'; b.style.maxWidth='1088px'; b.style.width='calc(100% - 32px)'; nav.after(b); }
+    else if(nav) nav.after(b); else { b.style.cssText+=';position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;margin:0 auto;z-index:15'; document.body.appendChild(b); } }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',place); else place();
 })();
 
 /* Установка как приложение и офлайн-режим */

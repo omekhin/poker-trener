@@ -1,5 +1,8 @@
 /* Shared site chrome: top navigation, streak badge, toast. Loaded after each page's own styles. */
-.sitenav{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;font-size:14px;margin:0 0 12px}
+html{touch-action:manipulation}
+button,a,.card,.slot,.dc,.hc,.c,.k{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.card,.slot,.dc,.hc,.k,.seat,.board{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.sitenav{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;font-size:14px;margin:0 0 12px;position:sticky;top:0;z-index:40;background:var(--bg);padding:10px 0;box-shadow:0 1px 0 var(--line)}
 .sitenav a{color:var(--ink2);text-decoration:none;font-weight:500;white-space:nowrap}
 .sitenav a:hover{color:var(--ink);text-decoration:underline}
 .sitenav .brand{font-family:var(--display);font-weight:700;color:var(--ink);font-size:16px;margin-right:6px}
@@ -15,7 +18,7 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sitenav .streak.done{color:#fdba74}}
 :root[data-theme="dark"] .sitenav .streak.done{color:#fdba74}
 @media (max-width:640px){
-  .sitenav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 0 6px;font-size:13px;gap:14px;padding:2px 0}
+  .sitenav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 0 6px;font-size:13px;gap:14px;padding:calc(8px + env(safe-area-inset-top,0px)) 0 8px}
   .sitenav::-webkit-scrollbar{display:none}
   .sitenav .brand{font-size:15px;margin-right:0;order:-2}
   .sitenav .streak{order:-1;margin-left:0}

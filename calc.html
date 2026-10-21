@@ -193,8 +193,9 @@ function nextEmpty(){
   for(let j=0;j<5;j++) if(S.board[j]==null) return {t:'b',j};
   return {t:null};
 }
+let calcUsed=false; function markUse(){ if(!calcUsed&&window.Flop){ calcUsed=true; Flop.ev('calc_use'); } }
 function setCard(c){
-  const A=S.act; if(!A.t) return;
+  const A=S.act; if(!A.t) return; markUse();
   if(A.t==='h') S.hands[A.i][A.j]=c; else { // keep board contiguous
     let j=A.j; while(j>0&&S.board[j-1]==null) j--; S.board[j]=c; }
   S.act=nextEmpty(); save(); render(); compute();

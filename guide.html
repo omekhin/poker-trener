@@ -43,7 +43,7 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
-html{scroll-behavior:smooth;scroll-padding-top:12px}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
 .app{max-width:980px;margin:0 auto;padding-block:14px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
 h1{font-family:var(--display);font-weight:700;font-size:24px;margin:0}
 .jump{display:flex;gap:6px;flex-wrap:wrap}
@@ -122,7 +122,14 @@ td.n{font-family:var(--mono);font-weight:700;white-space:nowrap}
 <div class="app">
   <nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="play.html">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html" aria-current="page">Шпаргалка</a><a href="stats.html">Статистика</a></nav>
   <h1>Шпаргалка</h1>
-  <div class="jump"><a href="#pos">Позиции</a><a href="#open">С чем входить</a><a href="#size">Размер ставки</a><a href="#stack">Игра по стеку</a><a href="#push">Олл-ин/фолд</a><a href="#odds">Шансы и ауты</a><a href="#ranks">Комбинации</a><a href="#terms">Термины</a></div>
+  <div class="jump"><a href="#ranks">Комбинации</a><a href="#pos">Позиции</a><a href="#open">С чем входить</a><a href="#size">Размер ставки</a><a href="#stack">Игра по стеку</a><a href="#push">Олл-ин/фолд</a><a href="#odds">Шансы и ауты</a><a href="#terms">Термины</a></div>
+
+  <section class="card" id="ranks">
+    <h2>Старшинство комбинаций</h2>
+    <p class="lead">Комбинация — лучшие 5 карт из 7: две твои и пять на столе. Тусклые карты в примерах — кикеры, они решают только при равной комбинации. Проценты — как часто комбинация собирается к риверу.</p>
+    <div class="combos" id="combosList"></div>
+    <div class="cta"><a class="btn primary" href="calc.html">Калькулятор шансов →</a></div>
+  </section>
 
   <section class="card" id="pos">
     <h2>Позиции за столом</h2>
@@ -220,12 +227,6 @@ td.n{font-family:var(--mono);font-weight:700;white-space:nowrap}
     </div>
   </section>
 
-  <section class="card" id="ranks">
-    <h2>Старшинство комбинаций</h2>
-    <p class="lead">Комбинация — лучшие 5 карт из 7: две твои и пять на столе. Тусклые карты в примерах — кикеры, они решают только при равной комбинации. Проценты — как часто комбинация собирается к риверу.</p>
-    <div class="combos" id="combosList"></div>
-    <div class="cta"><a class="btn primary" href="calc.html">Калькулятор шансов →</a></div>
-  </section>
 
   <section class="card" id="terms">
     <h2>Термины</h2>

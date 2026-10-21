@@ -134,6 +134,10 @@ select{font:inherit;border:1px solid var(--line);background:var(--surface);color
 .grade.bad{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
 .grade.hint{background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent)}
 .fb .t{font-size:13.5px}
+.fb .why{font-size:13px;line-height:1.5;color:var(--ink2);background:var(--bg);border-radius:8px;padding:8px 10px;margin:2px 0}
+.explain{font-size:13px;color:var(--ink2)}
+.explain summary{cursor:pointer;font-weight:600;color:var(--ink)}
+.explain p{margin:6px 0 0}
 .fb .n{font-family:var(--mono);font-size:12px;color:var(--ink2)}
 .empty{color:var(--muted);font-size:13px}
 .result{font-weight:600}
@@ -161,13 +165,14 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .setup .lbl{font-weight:600;font-size:14px;margin:4px 0 -4px}
 .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .opts.three{grid-template-columns:repeat(3,1fr)}
+.opts.four{grid-template-columns:repeat(4,1fr)}
 .opt{text-align:left;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:12px 14px;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:3px}
 .opt b{font-size:15px}
 .opt span{font-size:12.5px;color:var(--ink2);line-height:1.35}
 .opt[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--surface));box-shadow:inset 0 0 0 1px var(--accent)}
 .opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .go{background:var(--accent);color:var(--accent-ink);border:0;border-radius:12px;min-height:48px;font:600 16px var(--body);cursor:pointer;margin-top:6px}
-@media (max-width:520px){.opts,.opts.three{grid-template-columns:1fr}}
+@media (max-width:520px){.opts,.opts.three{grid-template-columns:1fr}.opts.four{grid-template-columns:repeat(2,1fr)}}
 
 .sitenav{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;font-size:14px;margin:0 0 12px}
 .sitenav a{color:var(--ink2);text-decoration:none;font-weight:500}
@@ -236,9 +241,10 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
       <span id="cfgSel" hidden><select id="selMode" aria-label="Режим"><option value="cash">Режим: кэш с докупами</option><option value="tour">Режим: турнир на вылет</option></select>
       <select id="selEvery" aria-label="Рост блайндов" hidden><option value="10">Блайнды: каждые 10 раздач</option><option value="6">Блайнды: каждые 6 раздач</option><option value="15">Блайнды: каждые 15 раздач</option></select>
       <select id="selTable" aria-label="Тип стола"><option value="club">Стол: клуб новичков</option><option value="tough">Стол: сильные игроки</option></select>
-      <select id="selSpeed" aria-label="Скорость"><option value="600">Темп: обычный</option><option value="250">Темп: быстрый</option><option value="1000">Темп: медленный</option></select></span>
+      <select id="selSpeed" aria-label="Скорость"><option value="600">Темп: обычный</option><option value="250">Темп: быстрый</option><option value="1000">Темп: медленный</option><option value="0">Темп: турбо</option></select></span>
       <span class="cfgsum" id="cfgSum"></span>
       <button class="btn" id="btnSetup" type="button">Новая игра</button>
+      <button class="btn" id="btnSpeed" type="button" title="Темп ботов: нажми, чтобы переключить"></button>
       <button class="btn" id="btnStats" type="button">Сессия</button>
       <a class="btn" href="stats.html"><span class="lg">Моя статистика</span><span class="sm">Статистика</span></a>
     </div>
@@ -258,7 +264,11 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
         <label class="chk"><input type="checkbox" id="chkHint"> подсказка до хода</label>
       </div>
       <div id="coach" style="display:flex;flex-direction:column;gap:10px"><div class="empty">Тренер оценит каждое твоё решение: до флопа по диапазонам для позиции и формуле рейза, после флопа по шансам руки против вероятных рук соперников.</div></div>
-      <div class="legend-note">Эквити — доля банка, которую рука выигрывает в среднем. Считается методом Монте-Карло против рук, с которыми соперник мог так сыграть. Это не солвер, а оценка.</div>
+      <details class="explain"><summary>Что значат проценты?</summary>
+        <p><b>Эквити</b> — как часто твоя рука выиграет банк, если доиграть раздачу до конца. 40% значит: из 10 таких раздач ты заберёшь банк примерно 4 раза.</p>
+        <p>Тренер считает его не против любых карт, а против рук, с которыми соперник реально мог так сыграть: большая ставка тайтового игрока — это чаще сильная рука, ставка маньяка — что угодно.</p>
+        <p><b>«Нужно»</b> — сколько процентов должно хватать, чтобы колл окупался: доплата ÷ банк после колла. Если эквити больше нужного, колл в плюс на дистанции, даже если именно эту раздачу проиграешь.</p>
+      </details>
     </aside>
   </div>
 </div>
@@ -676,7 +686,7 @@ function preAdvice(){
     const eqv=equity(h.cards,[], [{minChen:mc,aggr:false}], testMode?80:900);
     const toCall=Math.min(G.currentBet-h.bet,h.stack), pot=potTotal(), need=toCall/(pot+toCall);
     const ok=eqv>=need;
-    return {...ctx,kind:'callshove',eq:eqv,need,rec:ok?'call':'fold',cont:ok,text:`Олл-ин соперника на ${sbb.toFixed(1)} ББ. Против его вероятного диапазона у ${cls} ~${pct(eqv)}, а колл требует ${pct(need)} (платишь ${M(toCall)} в банк ${M(pot)}). ${ok?'Колл.':'Фолд.'}`};
+    return {...ctx,kind:'callshove',eq:eqv,need,toCall,pot,rec:ok?'call':'fold',cont:ok,text:`Олл-ин соперника на ${sbb.toFixed(1)} ББ. Против его вероятного диапазона у ${cls} ~${pct(eqv)}, а колл требует ${pct(need)} (платишь ${M(toCall)} в банк ${M(pot)}). ${ok?'Колл.':'Фолд.'}`};
   }
   if(ebb<=15){
     const bucket=ebb<=6?'b5':ebb<=10?'b10':'b15'; const bl={b5:'меньше 6 ББ',b10:'6–10 ББ',b15:'10–15 ББ'}[bucket];
@@ -788,6 +798,28 @@ function postAdvice(){
   return {eq,eff,need,pot,toCall,handTxt,rec,text,n,d};
 }
 const pct=x=>Math.round(x*100)+'%';
+/* plain-language odds explanation for the coach */
+function plur(n,f){ n=Math.abs(n)%100; const a=n%10; if(n>10&&n<20) return f[2]; if(a>1&&a<5) return f[1]; if(a===1) return f[0]; return f[2]; }
+function inTen(e){ const k=Math.round(e*10); return k<=0?'реже 1 раза из 10':k>=10?'почти всегда':`примерно ${k} ${plur(k,['раз','раза','раз'])} из 10`; }
+function oddsWhy(adv){
+  if(!adv||adv.eq==null) return '';
+  const opp = adv.kind==='callshove' ? 'рук, с которыми соперник идёт олл-ин'
+    : (adv.n>1 ? `рук ${adv.n} соперников, с которыми они так играют` : 'рук, с которыми соперник так играет');
+  const e=adv.eff??adv.eq;
+  if(adv.toCall>0){
+    const tot=adv.pot+adv.toCall, ev=Math.round(e*tot-adv.toCall);
+    let s=`В банке ${M(adv.pot)}, тебе доплатить ${M(adv.toCall)}. После колла банк станет ${M(tot)}, значит колл окупается, если ты забираешь его хотя бы в ${pct(adv.need)} случаев (${M(adv.toCall)} ÷ ${M(tot)}). `;
+    s+=`Против ${opp} твоя рука выигрывает около ${pct(adv.eq)} — ${inTen(adv.eq)}.`;
+    if(adv.eff!=null && adv.eff>adv.eq+0.001) s+=` С сильным дро прибавляем ~5%: если соберёшь, соперник ещё доплатит.`;
+    s+= ev>=0 ? ` На дистанции колл приносит в среднем +${M(ev)} за раздачу.` : ` На дистанции колл теряет в среднем ${M(-ev)} за раздачу — поэтому фолд.`;
+    return s;
+  }
+  let s=`Против ${opp} твоя рука выигрывает около ${pct(adv.eq)} — ${inTen(adv.eq)}. `;
+  if(adv.rec==='bet') s+='Ты чаще впереди, поэтому ставка выгодна: заплатят руки хуже твоей, а дро будут платить за карту.';
+  else if(adv.rec==='either') s+='Пограничный случай: небольшая ставка и чек примерно равны по выгоде.';
+  else s+= adv.eq<0.4 ? 'Ты чаще позади: на ставку сбросят руки хуже, а заплатят лучшие. Поэтому чек.' : 'Рука средняя: большой банк выгоден в основном сильным рукам соперника. Поэтому чек и маленький банк.';
+  return s;
+}
 function gradePost(adv,a){
   const act=a.type, pot=adv.pot; let g='good',txt='';
   const yours = act==='fold'?'фолд':act==='check'?'чек':act==='call'?`колл ${M(adv.toCall)}`:(G.currentBet===0?`ставка ${M(a.to)}`:`рейз до ${M(a.to)}`);
@@ -843,7 +875,8 @@ function gradeAction(adv,a){
   const r = G.street==='pre'?gradePre(adv,a):gradePost(adv,a);
   const numbers = G.street==='pre'?`${adv.pos} · ${adv.cls}${adv.limpers?` · лимперов: ${adv.limpers}`:''}`:`${adv.handTxt} · эквити ${pct(adv.eq)}${adv.toCall?` · нужно ${pct(adv.need)}`:''} · против ${adv.n}`;
   const mt=mistakeType(adv,a,r.g); if(mt){ P.local[mt]=(P.local[mt]||0)+1; S.mtypes[mt]=(S.mtypes[mt]||0)+1; try{localStorage.setItem('pt_mtypes',JSON.stringify(P.local));}catch(e){} }
-  const f={mt,street:STREET_RU[G.street],grade:r.g,gradeRu:GRADE_RU[r.g],yours:r.yours,text:(r.txt||'Верно.') + (r.g!=='good'?` Рекомендация: ${adv.text}`:''),numbers};
+  const prevHint=G.feedback.find(x=>x.grade==='hint'&&x.street===STREET_RU[G.street]&&x.why);
+  const f={why:prevHint?'':oddsWhy(adv),mt,street:STREET_RU[G.street],grade:r.g,gradeRu:GRADE_RU[r.g],yours:r.yours,text:(r.txt||'Верно.') + (r.g!=='good'?` Рекомендация: ${adv.text}`:''),numbers};
   G.feedback.unshift(f); renderCoach();
 }
 
@@ -876,7 +909,7 @@ function heroAct(){
       <div class="presets">${presets.map(([l,v,rec],i)=>`<button type="button" class="pre${rec?' rec':''}" data-v="${Math.min(Math.max(v,minTo),maxTo)}">${l} ${M(Math.min(Math.max(v,minTo),maxTo))}</button>`).join('')}<button type="button" class="pre" id="aHint">Подсказка</button></div>`:`<div class="presets"><button type="button" class="pre" id="aHint">Подсказка</button></div>`}`;
     const set=v=>{ to=Math.max(minTo,Math.min(maxTo,Math.round(+v||minTo))); const r=$('rng'),n=$('num'); if(r)r.value=to; if(n)n.value=to; $('aTo').textContent=M(to); };
     if(canRaise){ $('rng').oninput=e=>set(e.target.value); $('num').onchange=e=>set(e.target.value); box.querySelectorAll('.pre[data-v]').forEach(b=>b.onclick=()=>set(b.dataset.v)); }
-    const hint=()=>{ const a=getAdv(); G.feedback.unshift({street:STREET_RU[G.street],grade:'hint',gradeRu:'Подсказка',yours:'',text:a.text,numbers:G.street==='pre'?`${a.pos} · ${a.cls}`:`${a.handTxt} · эквити ${pct(a.eq)}${a.toCall?` · нужно ${pct(a.need)}`:''}`}); renderCoach(); $('aHint').disabled=true; };
+    const hint=()=>{ const a=getAdv(); G.feedback.unshift({why:oddsWhy(a),street:STREET_RU[G.street],grade:'hint',gradeRu:'Подсказка',yours:'',text:a.text,numbers:G.street==='pre'?`${a.pos} · ${a.cls}`:`${a.handTxt} · эквити ${pct(a.eq)}${a.toCall?` · нужно ${pct(a.need)}`:''}`}); renderCoach(); $('aHint').disabled=true; };
     $('aHint').onclick=hint;
     try{ nudge(); }catch(e){}
     if($('chkHint').checked) setTimeout(hint,0);
@@ -892,6 +925,7 @@ function waitNext(){
     if(G.over){ const pl=G.over.place; $('actions').innerHTML=`<div class="nextrow" style="flex-direction:column;gap:6px"><span class="result" style="font-size:18px;color:${pl===1?'var(--good)':'var(--ink)'}">${pl===1?'Победа! Ты выиграл турнир':`Турнир окончен: ${pl} место из 9`}</span><span style="color:var(--muted);font-size:13px">${T.hands} раздач · последний уровень ${M(SB)}/${M(BB)}</span><button type="button" class="abtn raise" id="aNext" style="flex:0 1 240px">Новый турнир</button></div>`; $('aNext').onclick=()=>{ G.newGamePending=true; res(); }; return; }
     $('actions').innerHTML=`<div class="nextrow"><span class="result ${r.net>0?'':''}" style="color:${r.net>0?'var(--good)':r.net<0?'var(--bad)':'var(--ink2)'}">${r.net>0?'Выиграл':r.net<0?'Проиграл':'Без изменений:'} ${r.net? M(Math.abs(r.net)):''}</span><button type="button" class="abtn raise" id="aNext" style="flex:0 1 240px">Следующая раздача</button></div>`;
     $('aNext').onclick=()=>res(); $('aNext').focus({preventScroll:true});
+    if(speed===0 && !testMode && h.folded && !G.heroVpip){ const hn=G.handNo; setTimeout(()=>{ if(G.handNo===hn && $('aNext')) res(); },450); }
   });
 }
 
@@ -926,7 +960,7 @@ function resultMsg(){ const r=G.lastResult; const ws=[...r.won.keys()].map(s=>s=
 function renderCoach(){
   const box=$('coach');
   if(!G.feedback.length){ box.innerHTML = G.handNo?'<div class="empty">Жду твоего решения.</div>':box.innerHTML; return; }
-  box.innerHTML=G.feedback.map(f=>`<div class="fb ${f.grade}"><div class="top"><span class="grade ${f.grade}">${f.gradeRu}</span><span>${f.street}</span>${f.yours?`<span>· ты: ${f.yours}</span>`:''}</div><div class="t">${f.text}</div><div class="n">${f.numbers}</div></div>`).join('');
+  box.innerHTML=G.feedback.map(f=>`<div class="fb ${f.grade}"><div class="top"><span class="grade ${f.grade}">${f.gradeRu}</span><span>${f.street}</span>${f.yours?`<span>· ты: ${f.yours}</span>`:''}</div><div class="t">${f.text}</div>${f.why?`<div class="why">${f.why}</div>`:''}<div class="n">${f.numbers}</div></div>`).join('');
 }
 function toast(t){ if(testMode) return; const el=$('toast'); el.textContent=t; el.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>el.hidden=true,2600); }
 
@@ -983,7 +1017,7 @@ function recordHand(h,net,showdown){
 const SETUP_TXT={mode:{tour:['Турнир на вылет','Стек 5 000, блайнды растут, играешь до победы или вылета'],cash:['Кэш с докупами','Блайнды $1/$2, стек $200, проиграл — докупился']},
   every:{'6':['Быстро','каждые 6 раздач'],'10':['Обычно','каждые 10 раздач'],'15':['Медленно','каждые 15 раздач']},
   table:{club:['Новички клуба','Много коллируют, мало блефуют, есть маньяк'],tough:['Сильные игроки','Тайтово-агрессивные регуляры']},
-  speed:{'250':['Быстрый',''],'600':['Обычный',''],'1000':['Медленный','']}};
+  speed:{'1000':['Медленный',''],'600':['Обычный',''],'250':['Быстрый',''],'0':['Турбо','боты мгновенно']}};
 function cfgSummary(){ const m=$('selMode').value; $('cfgSum').textContent=(m==='tour'?`Турнир · блайнды каждые ${$('selEvery').value} раздач`:'Кэш $1/$2')+` · ${SETUP_TXT.table[$('selTable').value][0].toLowerCase()}`; }
 function showSetup(first){
   const st={mode:$('selMode').value,every:$('selEvery').value,table:$('selTable').value,speed:$('selSpeed').value,hint:$('chkHint').checked};
@@ -994,7 +1028,7 @@ function showSetup(first){
     <div class="lbl">Режим</div>${grp('mode')}
     <div id="evWrap"><div class="lbl" style="margin-bottom:8px">Как растут блайнды</div>${grp('every','three')}</div>
     <div class="lbl">Соперники</div>${grp('table')}
-    <div class="lbl">Темп ботов</div>${grp('speed','three')}
+    <div class="lbl">Темп ботов</div>${grp('speed','four')}
     <label class="chk" style="font-size:14px"><input type="checkbox" id="suHint" ${st.hint?'checked':''}> Показывать совет тренера до моего хода</label>
     <button type="button" class="go" id="suGo">${first?'Начать игру':'Начать заново'}</button>
     ${first?'':'<button type="button" class="btn" id="suCancel">Отмена</button>'}
@@ -1006,13 +1040,19 @@ function showSetup(first){
   $('suGo').onclick=()=>{
     $('selMode').value=st.mode; $('selEvery').value=st.every; $('selTable').value=st.table; $('selSpeed').value=st.speed; $('chkHint').checked=$('suHint').checked; speed=+st.speed;
     try{ localStorage.setItem('pt_mode',st.mode); localStorage.setItem('pt_every',st.every); localStorage.setItem('pt_table',st.table); localStorage.setItem('pt_speed',st.speed); localStorage.setItem('pt_hint',$('suHint').checked?'1':'0'); }catch(_){}
-    ov.hidden=true; cfgSummary();
+    ov.hidden=true; cfgSummary(); speedLabel();
+    if(window.Flop) Flop.ev('game_start',{mode:st.mode,table:st.table,speed:st.speed});
     if(first){ newGame(); loop(); }
     else if(G.running){ G.newGamePending=true; toast('Новая игра начнётся после этой раздачи'); }
     else { G.newGamePending=true; const nb=$('aNext'); if(nb) nb.click(); }
   };
 }
 
+
+/* speed switch during play */
+const SPEEDS=[['1000','Медленно'],['600','Обычно'],['250','Быстро'],['0','Турбо']];
+function speedLabel(){ const v=$('selSpeed').value; const l=(SPEEDS.find(x=>x[0]===v)||SPEEDS[1])[1]; $('btnSpeed').innerHTML=`<span aria-hidden="true">${v==='0'?'⏭':'▶︎'}</span>&nbsp;${l}`; $('btnSpeed').setAttribute('aria-label','Темп ботов: '+l); }
+function cycleSpeed(){ const v=$('selSpeed').value; const i=SPEEDS.findIndex(x=>x[0]===v); const nv=SPEEDS[(i+1)%SPEEDS.length][0]; $('selSpeed').value=nv; speed=+nv; try{ localStorage.setItem('pt_speed',nv); }catch(_){} speedLabel(); toast(nv==='0'?'Турбо: боты ходят мгновенно, после фолда сразу новая раздача':'Темп: '+SPEEDS.find(x=>x[0]===nv)[1].toLowerCase()); }
 /* ================= boot ================= */
 function newGame(){
   MODE=$('selMode').value; T.every=+$('selEvery').value||10; T.hands=0; T.level=0;
@@ -1040,7 +1080,7 @@ function boot(){
   $('btnStats').onclick=showStats;
   try{ P.local=JSON.parse(localStorage.getItem('pt_mtypes')||'{}')||{}; }catch(e){}
   try{ const qp=new URLSearchParams(location.search); if(qp.get('mode')) $('selMode').value=qp.get('mode')==='tour'?'tour':'cash'; if(qp.get('hint')==='1') $('chkHint').checked=true; }catch(_){}
-  $('btnSetup').onclick=()=>showSetup(false);
+  $('btnSetup').onclick=()=>showSetup(false); $('btnSpeed').onclick=cycleSpeed; speedLabel();
   cfgSummary();
   if(testMode){ speed=0; loop(); return; }
   showSetup(true);
