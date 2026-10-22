@@ -2,7 +2,7 @@
 html{touch-action:manipulation}
 button,a,.card,.slot,.dc,.hc,.c,.k{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .card,.slot,.dc,.hc,.k,.seat,.board{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-.sitenav{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;font-size:14px;margin:0 0 12px;position:sticky;top:0;z-index:40;background:var(--bg);padding:10px 0;box-shadow:0 1px 0 var(--line)}
+.sitenav{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;font-size:14px;margin:0 0 12px;position:sticky;top:0;z-index:40;background:var(--bg);padding:10px 0;box-shadow:0 1px 0 var(--line),0 0 0 100vmax var(--bg);clip-path:inset(-300px -100vmax -1px -100vmax)}
 .sitenav a{color:var(--ink2);text-decoration:none;font-weight:500;white-space:nowrap}
 .sitenav a:hover{color:var(--ink);text-decoration:underline}
 .sitenav .brand{font-family:var(--display);font-weight:700;color:var(--ink);font-size:16px;margin-right:6px}

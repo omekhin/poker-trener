@@ -21,6 +21,7 @@
 <meta name="apple-mobile-web-app-title" content="Флоп">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="canonical" href="https://poker-trener.ru/play.html">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="fonts.css">
 <style>
@@ -221,6 +222,28 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
   .presets{flex-wrap:nowrap;overflow-x:auto}
   .pre{white-space:nowrap}
   .sizer input[type=number]{width:72px}
+}
+
+/* ===== phone: whole table + actions in one screen ===== */
+@media (max-width:640px){
+  .hstats{gap:8px}
+  .hstat b{font-size:13px}
+  .hstat span{font-size:8.5px}
+  .tools .btn{padding:6px 4px;font-size:12.5px;min-height:34px}
+  header{gap:4px 8px}
+  .app{gap:6px}
+  .tablewrap.fit{display:flex;flex-direction:column;gap:6px}
+  .tablewrap.fit .table{flex:1 1 auto;height:auto;min-height:300px;aspect-ratio:auto}
+  .actions{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+  .actions>*{grid-column:1/-1}
+  .actions>.sizer{grid-column:1;flex-wrap:nowrap}
+  .actions>.sizer+.presets{grid-column:2}
+  .sizer input[type=range]{display:none}
+  .sizer input[type=number]{width:74px;padding:6px 6px;font-size:14px}
+  .presets{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .presets::-webkit-scrollbar{display:none}
+  .pre{padding:7px 9px}
+  .abtn{padding:11px 4px;font-size:15px}
 }
 </style>
 <link rel="stylesheet" href="site.css">
@@ -1053,6 +1076,16 @@ function showSetup(first){
 const SPEEDS=[['1000','Медленно'],['600','Обычно'],['250','Быстро'],['0','Турбо']];
 function speedLabel(){ const v=$('selSpeed').value; const l=(SPEEDS.find(x=>x[0]===v)||SPEEDS[1])[1]; $('btnSpeed').innerHTML=`<span aria-hidden="true">${v==='0'?'⏭':'▶︎'}</span>&nbsp;${l}`; $('btnSpeed').setAttribute('aria-label','Темп ботов: '+l); }
 function cycleSpeed(){ const v=$('selSpeed').value; const i=SPEEDS.findIndex(x=>x[0]===v); const nv=SPEEDS[(i+1)%SPEEDS.length][0]; $('selSpeed').value=nv; speed=+nv; try{ localStorage.setItem('pt_speed',nv); }catch(_){} speedLabel(); toast(nv==='0'?'Турбо: боты ходят мгновенно, после фолда сразу новая раздача':'Темп: '+SPEEDS.find(x=>x[0]===nv)[1].toLowerCase()); }
+
+/* phone: size the table so table + action bar fill exactly one screen */
+function fitTable(){
+  const tw=document.querySelector('.tablewrap'); if(!tw) return;
+  if(innerWidth>640){ tw.classList.remove('fit'); tw.style.height=''; return; }
+  const vh=window.innerHeight, top=tw.getBoundingClientRect().top+window.scrollY;
+  tw.classList.add('fit'); tw.style.height=Math.max(470, vh-top-4)+'px';
+}
+let fitW=0; function refit(){ if(innerWidth!==fitW){ fitW=innerWidth; fitTable(); } }
+window.addEventListener('resize',refit); window.addEventListener('orientationchange',()=>setTimeout(fitTable,300));
 /* ================= boot ================= */
 function newGame(){
   MODE=$('selMode').value; T.every=+$('selEvery').value||10; T.hands=0; T.level=0;
@@ -1083,6 +1116,7 @@ function boot(){
   $('btnSetup').onclick=()=>showSetup(false); $('btnSpeed').onclick=cycleSpeed; speedLabel();
   cfgSummary();
   if(testMode){ speed=0; loop(); return; }
+  fitTable(); fitW=innerWidth; if(document.fonts) document.fonts.ready.then(fitTable);
   showSetup(true);
 }
 boot();
