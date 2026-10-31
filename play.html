@@ -273,7 +273,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
 <body>
 
 <div class="app">
-<nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="learn.html">С нуля</a><a href="play.html" aria-current="page">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html">Статистика</a></nav>
+<nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="learn.html">С нуля</a><a href="play.html" aria-current="page">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html">Статистика</a><a href="rating.html">Рейтинг</a></nav>
   <header>
     <h1>Покерный тренажёр</h1>
     <div class="hstats">
@@ -974,7 +974,7 @@ function heroAct(){
 function waitNext(){
   return new Promise(res=>{
     const h=hero(), r=G.lastResult;
-    if(G.over){ const pl=G.over.place; $('actions').innerHTML=`<div class="nextrow" style="flex-direction:column;gap:6px"><span class="result" style="font-size:18px;color:${pl===1?'var(--good)':'var(--ink)'}">${pl===1?'Победа! Ты выиграл турнир':`Турнир окончен: ${pl} место из 9`}</span><span style="color:var(--muted);font-size:13px">${T.hands} раздач · последний уровень ${M(SB)}/${M(BB)}</span><button type="button" class="abtn raise" id="aNext" style="flex:0 1 240px">Новый турнир</button></div>`; $('aNext').onclick=()=>{ G.newGamePending=true; res(); }; return; }
+    if(G.over){ const pl=G.over.place; $('actions').innerHTML=`<div class="nextrow" style="flex-direction:column;gap:6px"><span class="result" style="font-size:18px;color:${pl===1?'var(--good)':'var(--ink)'}">${pl===1?'Победа! Ты выиграл турнир':`Турнир окончен: ${pl} место из 9`}</span><span style="color:var(--muted);font-size:13px">${T.hands} раздач · последний уровень ${M(SB)}/${M(BB)}</span><div class="arow" style="justify-content:center;width:100%"><button type="button" class="abtn raise" id="aNext" style="flex:0 1 200px">Новый турнир</button><button type="button" class="abtn call" id="aShare" style="flex:0 1 200px">Поделиться</button></div></div>`; $('aNext').onclick=()=>{ G.newGamePending=true; res(); }; $('aShare').onclick=shareTour; return; }
     $('actions').innerHTML=`<div class="nextrow"><span class="result ${r.net>0?'':''}" style="color:${r.net>0?'var(--good)':r.net<0?'var(--bad)':'var(--ink2)'}">${r.net>0?'Выиграл':r.net<0?'Проиграл':'Без изменений:'} ${r.net? M(Math.abs(r.net)):''}</span><button type="button" class="abtn raise" id="aNext" style="flex:0 1 240px">Следующая раздача</button>${(()=>{const x=sdExplain(); return x?`<div class="sdx">${x}</div>`:'';})()}</div>`;
     $('aNext').onclick=()=>res(); $('aNext').focus({preventScroll:true});
     if(speed===0 && !testMode && h.folded && !G.heroVpip){ const hn=G.handNo; setTimeout(()=>{ if(G.handNo===hn && $('aNext')) res(); },450); }
@@ -1072,6 +1072,12 @@ function saveLocal(){
   }catch(e){}
 }
 function saveAll(){ saveLocal(); }
+/* «Поделиться»: карточка с результатом турнира или сессии */
+function accTxt(){ const g=S.grades, t=g.good+g.ok+g.bad; return t?pct(g.good/t):'—'; }
+function shareTour(){ if(!window.Flop||!Flop.share) return; const pl=G.over.place;
+  Flop.share({kind:'tournament',eyebrow:'Турнир на 9 игроков',big:pl===1?'Победа в турнире!':`${pl} место из 9`,sub:`${T.hands} раздач против ботов, финальные блайнды ${M(SB)}/${M(BB)}`,stats:[[T.hands,'раздач'],[accTxt(),'верных решений по оценке тренера'],[pl,'место']],text:pl===1?'Победа в турнире на Флопе':`${pl} место в турнире на Флопе`}); }
+function shareSession(){ if(!window.Flop||!Flop.share) return; const net=S.net, bb=Math.round(net/BB);
+  Flop.share({kind:'session',eyebrow:MODE==='tour'?'Турнир':'Кэш-сессия',big:MODE==='tour'?`${S.hands} раздач`:`${bb>=0?'+':'−'}${Math.abs(bb)} ББ`,sub:`${S.hands} раздач, тренер разобрал каждое решение`,stats:[[S.hands,'раздач'],[accTxt(),'верных решений'],[S.hands?pct(S.vpip/S.hands):'—','вход в игру']],text:MODE==='tour'?`${S.hands} раздач с тренером на Флопе`:`Сессия на Флопе: ${bb>=0?'+':'−'}${Math.abs(bb)} ББ за ${S.hands} раздач`}); }
 function showStats(){
   const ov=$('overlay'); const g=S.grades, tot=g.good+g.ok+g.bad;
   const bb100=S.hands?(S.net/BB/S.hands*100).toFixed(0):'—';
@@ -1082,8 +1088,9 @@ function showStats(){
   <h2 style="font-size:16px">Твои частые ошибки</h2><div class="mlist" style="max-height:none">${Object.keys(MT).filter(k=>mtCount(k)>0).sort((a,b)=>mtCount(b)-mtCount(a)).slice(0,6).map(k=>`<div><b>${MT[k][0]}</b> — ${mtCount(k)} раз${S.mtypes[k]?` (в этой сессии ${S.mtypes[k]})`:''}<br>${MT[k][1]}</div>`).join('')||'<div class="empty">Пока нет данных.</div>'}</div>
   <h2 style="font-size:16px">Последние ошибки</h2><div class="mlist">${S.mistakes.length?S.mistakes.map(m=>`<div><b>#${m.hand} · ${m.cards} · ${m.street}</b><br>${m.text}</div>`).join(''):'<div class="empty">Пока без ошибок.</div>'}</div>
   <div class="legend-note">Это статистика текущей игры. Карта рук, история турниров и ошибки за всё время — в разделе <a href="stats.html">«Моя статистика»</a>.</div>
-  <div class="arow"><button type="button" class="btn" id="cpy">Скопировать историю раздач</button></div></div>`;
+  <div class="arow"><button type="button" class="btn" id="cpy">Скопировать историю раздач</button>${S.hands?'<button type="button" class="btn" id="shr">Поделиться результатом</button>':''}</div></div>`;
   ov.hidden=false; $('cls').onclick=()=>ov.hidden=true; ov.onclick=e=>{ if(e.target===ov) ov.hidden=true; };
+  if($('shr')) $('shr').onclick=shareSession;
   $('cpy').onclick=async()=>{ const txt=S.histories.join('\n\n'); try{ await navigator.clipboard.writeText(txt); toast('История скопирована'); }catch(e){ const ta=document.createElement('textarea'); ta.value=txt; ta.style.width='100%'; ta.rows=8; $('cpy').after(ta); ta.select(); toast('Выдели и скопируй текст'); } };
 }
 

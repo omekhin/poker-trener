@@ -66,6 +66,8 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;margin:0}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 .card h2{font-family:var(--display);font-weight:500;font-size:17px;margin:0}
 .card .note{font-size:12.5px;color:var(--ink2);margin:0}
+.shbtn{border:1px solid var(--line);background:var(--surface);color:var(--accent);border-radius:10px;padding:8px 14px;font:600 14px var(--body);cursor:pointer}
+.shbtn:hover{border-color:var(--accent)}
 .chead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .empty{color:var(--muted);font-size:13px;padding:8px 0}
 /* mistakes bars */
@@ -138,7 +140,7 @@ td.txt{font-family:var(--body)}
 </head>
 <body>
 <div class="app">
-  <nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="learn.html">С нуля</a><a href="play.html">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html" aria-current="page">Статистика</a></nav>
+  <nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="learn.html">С нуля</a><a href="play.html">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html" aria-current="page">Статистика</a><a href="rating.html">Рейтинг</a></nav>
   <header>
     <h1>Моя статистика</h1>
     <div class="seg" id="segMode" role="group" aria-label="Режим"><button type="button" data-v="all" aria-pressed="true">Всё</button><button type="button" data-v="c" aria-pressed="false">Кэш</button><button type="button" data-v="t" aria-pressed="false">Турниры</button></div>
@@ -149,6 +151,7 @@ td.txt{font-family:var(--body)}
     <div class="chead"><h2>Ударный режим</h2><span class="goalsel" id="goalsel" role="group" aria-label="Цель на день">цель в день: <button type="button" data-g="10">10</button><button type="button" data-g="20">20</button><button type="button" data-g="40">40</button></span></div>
     <div class="streakc" id="streakc"></div>
     <p class="note">Очко — сыгранная раздача за столом, решённая задача на ауты или пуш/фолд. Набери дневную цель, чтобы серия не прервалась. Без входа всё хранится только в этом браузере.</p>
+    <div><button type="button" class="shbtn" id="shStreak">Поделиться прогрессом</button></div>
   </section>
 
   <div id="emptyAll" class="hero-empty" hidden>
@@ -371,6 +374,8 @@ function streakCard(){
     <div class="calleg"><span>меньше</span><span class="d" style="background:${mix(mix(surf,hot,.18),hot,.2)}"></span><span class="d" style="background:${mix(mix(surf,hot,.18),hot,.6)}"></span><span class="d" style="background:${hot}"></span><span>больше</span><span style="margin-left:8px"><span class="d" style="background:${hot};outline:2px solid ${css('--ink')};outline-offset:-2px"></span> цель выполнена</span></div>`;
 }
 streakCard();
+$('shStreak').onclick=()=>{ if(!window.Flop||!Flop.share) return; const I=Flop.info(); let g=[0,0,0]; (D.hands||[]).forEach(h=>{ if(h.g){ g[0]+=h.g[0]; g[1]+=h.g[1]; g[2]+=h.g[2]; } }); const tot=g[0]+g[1]+g[2], n=(D.hands||[]).length;
+  Flop.share({kind:'streak',eyebrow:'Мой прогресс',big:I.streak?`${I.streak} ${P(I.streak,['день','дня','дней'])} подряд`:`${n} ${P(n,['раздача','раздачи','раздач'])}`,sub:I.streak?'тренируюсь в покер каждый день':'сыграно с тренером',stats:[[n,'раздач с тренером'],[tot?Math.round(g[0]/tot*100)+'%':'—','верных решений'],[I.best,'лучшая серия дней']],text:I.streak?`${I.streak} ${P(I.streak,['день','дня','дней'])} подряд тренирую покер на Флопе`:`${n} раздач с тренером на Флопе`}); };
 
 render();
 </script>

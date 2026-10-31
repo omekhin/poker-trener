@@ -143,7 +143,7 @@ td:first-child{font-weight:700;white-space:nowrap}
 </head>
 <body>
 <div class="app">
-  <nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="learn.html" aria-current="page">С нуля</a><a href="play.html">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html">Статистика</a></nav>
+  <nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="learn.html" aria-current="page">С нуля</a><a href="play.html">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html">Статистика</a><a href="rating.html">Рейтинг</a></nav>
   <h1>Покер с нуля</h1>
   <p class="intro">Если ты ни разу не играл или путаешься в правилах — начни здесь. 12 коротких уроков, в каждом один вопрос на проверку. Займёт минут 20. В конце сядешь за стол в режиме, где тренер объясняет каждый шаг.</p>
 
@@ -474,8 +474,9 @@ const FINAL=[
   const box=document.getElementById('final'); let i=0, ok=0;
   function show(){
     if(i>=FINAL.length){
-      box.innerHTML=`<div class="res">${ok} из ${FINAL.length}</div><p>${ok>=7?'Отлично, правила ты знаешь. Пора за стол!':ok>=5?'Неплохо. Перечитай уроки, где ошибся, — и за стол.':'Стоит пройти уроки ещё раз — это быстро.'}</p><div class="cta"><button class="btn" id="fRe" type="button">Пройти тест заново</button></div>`;
+      box.innerHTML=`<div class="res">${ok} из ${FINAL.length}</div><p>${ok>=7?'Отлично, правила ты знаешь. Пора за стол!':ok>=5?'Неплохо. Перечитай уроки, где ошибся, — и за стол.':'Стоит пройти уроки ещё раз — это быстро.'}</p><div class="cta"><button class="btn primary" id="fSh" type="button">Поделиться</button><button class="btn" id="fRe" type="button">Пройти тест заново</button></div>`;
       document.getElementById('fRe').onclick=()=>{ i=0; ok=0; show(); };
+      const sc=ok; document.getElementById('fSh').onclick=()=>{ if(window.Flop&&Flop.share) Flop.share({kind:'learn',eyebrow:'Покер с нуля',big:`Тест: ${sc} из ${FINAL.length}`,sub:'курс правил покера за 20 минут',stats:[[`${sc}/${FINAL.length}`,'правильных ответов'],['12','уроков']],cards:['As','Ah'],text:`Тест по правилам покера: ${sc} из ${FINAL.length}`}); };
       if(ok>=5) markDone('l12'); if(window.Flop&&Flop.ev) Flop.ev('learn_test',{score:ok}); return;
     }
     const [t,os,a]=FINAL[i];

@@ -103,15 +103,17 @@ h1{font-family:var(--display);font-weight:700;font-size:22px;margin:0}
   .hc{font-size:7px}.hgrid{gap:1.5px}
   .kbd{display:none}
 }
+.pfshare{border:1px solid var(--line);background:var(--surface);color:var(--accent);border-radius:10px;padding:8px 14px;font:600 14px var(--body);cursor:pointer;align-self:flex-start}
 </style>
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
 <div class="app">
-  <nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="learn.html">С нуля</a><a href="play.html">Стол с тренером</a><a href="pushfold.html" aria-current="page">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html">Статистика</a></nav>
+  <nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="learn.html">С нуля</a><a href="play.html">Стол с тренером</a><a href="pushfold.html" aria-current="page">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html">Статистика</a><a href="rating.html">Рейтинг</a></nav>
   <header>
     <div><h1>Пуш/фолд</h1><p class="sub">Стек 15 ББ и меньше: либо олл-ин, либо фолд. Реши за пару секунд — как за столом.</p></div>
     <div class="score"><div><b id="scN">0</b><span>решено</span></div><div><b id="scAcc">—</b><span>точность</span></div><div><b id="scRun">0</b><span>подряд</span></div></div>
+    <button type="button" class="pfshare" id="pfShare" hidden>Поделиться результатом</button>
   </header>
   <div class="controls">
     <div class="seg" id="segMode" role="group" aria-label="Режим"><button type="button" data-v="push" aria-pressed="true">Первым в банк</button><button type="button" data-v="call" aria-pressed="false">Колл олл-ина</button></div>
@@ -255,7 +257,8 @@ function answer(a){
   $('btns').innerHTML=`<button type="button" class="abtn next" id="bNext">Следующая ситуация →</button>`; $('bNext').onclick=next; $('bNext').focus({preventScroll:true});
   $('kbd').textContent='Enter или пробел — следующая';
 }
-function score(){ $('scN').textContent=ST.n; $('scAcc').textContent=ST.n?pct(ST.ok/ST.n):'—'; $('scRun').textContent=ST.run; }
+function score(){ $('scN').textContent=ST.n; $('scAcc').textContent=ST.n?pct(ST.ok/ST.n):'—'; $('scRun').textContent=ST.run; $('pfShare').hidden=ST.n<10; }
+$('pfShare').onclick=()=>{ if(window.Flop&&Flop.share) Flop.share({kind:'pushfold',eyebrow:'Олл-ин или фолд',big:`Точность ${pct(ST.ok/ST.n)}`,sub:`${ST.n} задач на короткий стек`,stats:[[ST.n,'задач решено'],[pct(ST.ok/ST.n),'точность'],[ST.run,'верно подряд']],text:`${ST.n} задач пуш/фолд, точность ${pct(ST.ok/ST.n)}`}); };
 function next(){ S=mode==='push'?genPush():genCall(); render(); }
 $('segMode').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; mode=b.dataset.v; try{ localStorage.setItem('pf_mode',mode); }catch(_){} next(); };
 document.addEventListener('keydown',e=>{ if(e.target.closest('input,textarea')) return; const k=e.key.toLowerCase();
