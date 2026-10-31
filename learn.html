@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Покер с нуля — Флоп</title>
+<meta name="description" content="Правила покера для новичков простыми словами: как проходит раздача, комбинации, кто выигрывает, ставки, блайнды, позиции, виды игр. С тренажёром «Кто выиграл?» и тестом.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Флоп">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="Покер с нуля — Флоп">
+<meta property="og:description" content="Правила покера для новичков простыми словами: раздача, комбинации, кто выигрывает, ставки, позиции. С тренажёром и тестом.">
+<meta property="og:url" content="https://poker-trener.ru/learn.html">
+<meta property="og:image" content="https://poker-trener.ru/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f6a4c">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="Флоп">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="canonical" href="https://poker-trener.ru/learn.html">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="fonts.css">
+<style>
+/* Layout: nav, title + progress, lesson cards (each with a one-question check), «Кто выиграл?» drill, glossary, final test, CTA to the table in beginner mode. */
+:root{
+  --bg:#eef1ef; --surface:#ffffff; --ink:#141a17; --ink2:#47524d; --muted:#6f7a75; --line:#d9dfdb; --grid:#e8ece9;
+  --felt:#1f6a4c; --felt-edge:#174f39; --felt-ink:#e9f4ee;
+  --accent:#1f6a4c; --accent-ink:#ffffff; --good:#1e8a4c; --bad:#c43c33; --card:#ffffff;
+  --c-s:#1a1a1a; --c-h:#cf2f2f; --c-d:#2d64c8; --c-c:#1c8a3e;
+  --display:"Unbounded","Onest",system-ui,sans-serif; --body:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#101412; --surface:#191e1c; --ink:#edf1ef; --ink2:#b4beb9; --muted:#8d9893; --line:#2b3330; --grid:#242b28;
+  --felt:#1b5a41; --felt-edge:#123c2c; --felt-ink:#e4f2ea;
+  --accent:#47b383; --accent-ink:#06140d; --good:#4cbb7f; --bad:#ec6b63; --card:#f4f4f1; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101412; --surface:#191e1c; --ink:#edf1ef; --ink2:#b4beb9; --muted:#8d9893; --line:#2b3330; --grid:#242b28;
+  --felt:#1b5a41; --felt-edge:#123c2c; --felt-ink:#e4f2ea;
+  --accent:#47b383; --accent-ink:#06140d; --good:#4cbb7f; --bad:#ec6b63; --card:#f4f4f1; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+html{scroll-behavior:smooth;scroll-padding-top:110px}
+.app{max-width:820px;margin:0 auto;padding-block:14px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--display);font-weight:700;font-size:26px;margin:4px 0 0;line-height:1.2}
+.intro{margin:0;color:var(--ink2);font-size:16.5px}
+.prog{position:sticky;top:52px;z-index:30;background:var(--bg);padding:8px 0;display:flex;flex-direction:column;gap:8px}
+.bar{height:8px;border-radius:99px;background:var(--grid);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .3s}
+.toc{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.toc::-webkit-scrollbar{display:none}
+.toc a{font-size:13px;text-decoration:none;color:var(--ink2);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.toc a.done{border-color:color-mix(in srgb,var(--accent) 50%,var(--line));color:var(--accent)}
+.toc a.done::before{content:"✓ "}
+.toc small{font-size:13px;color:var(--muted);white-space:nowrap;align-self:center;margin-right:4px}
+.lesson{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.lesson .num{font:700 12px var(--mono);color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
+.lesson h2{font-family:var(--display);font-weight:700;font-size:20px;margin:0;line-height:1.25}
+.lesson p{margin:0}
+.lesson ul,.lesson ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.note{background:var(--bg);border-radius:12px;padding:12px 14px;font-size:15px;color:var(--ink2)}
+.note b{color:var(--ink)}
+.k{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:34px;height:48px;border-radius:6px;background:var(--card);border:1px solid rgba(0,0,0,.14);box-shadow:0 1px 2px rgba(0,0,0,.18);font:700 15px/1 var(--mono);vertical-align:middle;flex:0 0 auto}
+.k i{font-style:normal;font-size:12px;margin-top:2px}
+.k.sm{width:26px;height:36px;font-size:12px}.k.sm i{font-size:10px}
+.k.back{background:repeating-linear-gradient(45deg,#9b2f2f 0 4px,#7c2323 4px 8px);border:2px solid #fff}
+.k.dim{opacity:.35}
+.k.win{box-shadow:0 0 0 2px #e8c34a,0 1px 2px rgba(0,0,0,.2)}
+.su-s{color:var(--c-s)}.su-h{color:var(--c-h)}.su-d{color:var(--c-d)}.su-c{color:var(--c-c)}
+.row{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.felt{background:radial-gradient(ellipse at 50% 35%,color-mix(in srgb,var(--felt) 85%,#fff),var(--felt) 70%,var(--felt-edge));border-radius:16px;padding:14px;color:var(--felt-ink);display:flex;flex-direction:column;gap:10px}
+.felt .lbl{font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.85;font-weight:600}
+.steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0;counter-reset:s}
+.steps li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:4px 12px;padding:10px 0;border-bottom:1px solid var(--grid);counter-increment:s}
+.steps li::before{content:counter(s);width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font:700 13px var(--mono);display:flex;align-items:center;justify-content:center;grid-row:span 2}
+.steps li>*{grid-column:2}
+.steps b{display:block}
+.steps span{color:var(--ink2);font-size:15px}
+.steps .row{margin-top:4px}
+.combos{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.combos li{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:2px 12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--grid)}
+.combos .n{font:700 14px var(--mono);color:var(--muted)}
+.combos .d b{display:block}
+.combos .d span{font-size:14px;color:var(--ink2)}
+.combos .row{gap:2px;flex-wrap:nowrap}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;font-weight:600;color:var(--ink2);padding:8px 10px;border-bottom:1px solid var(--line);font-size:13px}
+td{padding:9px 10px;border-bottom:1px solid var(--grid);vertical-align:top}
+td:first-child{font-weight:700;white-space:nowrap}
+.tblwrap{overflow-x:auto}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{background:var(--bg);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.tile b{font-size:16px}
+.tile span{font-size:14px;color:var(--ink2)}
+.q{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.q .qt{font-weight:600}
+.q .qt::before{content:"Проверь себя: ";color:var(--accent)}
+.opts{display:flex;gap:8px;flex-wrap:wrap}
+.opt{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 14px;font:500 15px var(--body);cursor:pointer}
+.opt:hover{border-color:var(--muted)}
+.opt.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface));color:var(--good);font-weight:700}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--surface));color:var(--bad)}
+.opt:disabled{cursor:default}
+.fbk{font-size:15px;color:var(--ink2)}
+.fbk b{color:var(--ink)}
+.drill{display:flex;flex-direction:column;gap:12px}
+.drill .players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.drill .pl{background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font:inherit;color:var(--ink)}
+.drill .pl:hover{border-color:var(--muted)}
+.drill .pl.right{border-color:var(--good)}
+.drill .pl.wrong{border-color:var(--bad)}
+.drill .pl .nm{font-weight:700}
+.drill .pl .hn{font-size:13px;color:var(--ink2);min-height:18px;text-align:center}
+.drill .tie{align-self:center}
+.score{font:600 14px var(--mono);color:var(--ink2)}
+.gloss{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 24px;margin:0}
+.gloss div{padding:8px 0;border-bottom:1px solid var(--grid);font-size:15px}
+.gloss dt{font-weight:700;display:inline}
+.gloss dd{display:inline;margin:0;color:var(--ink2)}
+.gloss dd::before{content:" — "}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:11px 16px;font:600 15px var(--body);text-decoration:none;cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.cta{display:flex;gap:8px;flex-wrap:wrap}
+.final .res{font-family:var(--display);font-size:20px;font-weight:700}
+.seatmap{width:100%;max-width:420px;height:auto;display:block;margin:0 auto}
+.seatmap text{font:700 12px var(--mono)}
+@media (max-width:640px){
+  h1{font-size:21px}
+  .lesson{padding:16px 14px}
+  .lesson h2{font-size:18px}
+  .grid2,.gloss{grid-template-columns:minmax(0,1fr)}
+  .k{width:30px;height:42px;font-size:14px}
+  .combos li{grid-template-columns:22px minmax(0,1fr);}
+  .combos .row{grid-column:2}
+  .prog{top:44px}
+}
+</style>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="learn.html" aria-current="page">С нуля</a><a href="play.html">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html">Статистика</a></nav>
+  <h1>Покер с нуля</h1>
+  <p class="intro">Если ты ни разу не играл или путаешься в правилах — начни здесь. 12 коротких уроков, в каждом один вопрос на проверку. Займёт минут 20. В конце сядешь за стол в режиме, где тренер объясняет каждый шаг.</p>
+
+  <div class="prog">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <div class="toc" id="toc"></div>
+  </div>
+
+  <section class="lesson" id="l1" data-t="Что за игра">
+    <div class="num">Урок 1</div>
+    <h2>Что это за игра</h2>
+    <p>Чаще всего играют в <b>техасский холдем</b> — его показывают по телевизору и в него играют в клубах. Дальше речь только про него.</p>
+    <p>За столом сидят от 2 до 10 человек. У каждого есть фишки — его <b>стек</b>. В каждой раздаче игроки ставят фишки в общую кучу — <b>банк</b>. Цель — забрать банк.</p>
+    <p>Забрать банк можно двумя способами:</p>
+    <ol>
+      <li><b>Показать лучшую комбинацию.</b> В конце раздачи оставшиеся игроки открывают карты — у кого сильнее, тот и забирает.</li>
+      <li><b>Заставить всех сбросить карты.</b> Если ты поставил, а все остальные отказались платить, банк твой, и карты можно никому не показывать. Поэтому в покере работает блеф — ставка со слабой рукой, чтобы соперники испугались.</li>
+    </ol>
+    <div class="note">Покер — не лотерея. Карты приходят случайно, но решаешь ты: когда ставить, когда сбросить. На длинной дистанции выигрывает тот, кто принимает решения лучше.</div>
+    <div class="q" data-a="1"><div class="qt">Можно ли выиграть банк со слабыми картами?</div><div class="opts"><button class="opt">Нет, побеждает только лучшая комбинация</button><button class="opt">Да, если все остальные сбросят карты</button></div><div class="fbk" hidden>Да. Если на твою ставку все сбросили, банк твой без вскрытия, какие бы карты у тебя ни были.</div></div>
+  </section>
+
+  <section class="lesson" id="l2" data-t="Колода">
+    <div class="num">Урок 2</div>
+    <h2>Колода и старшинство карт</h2>
+    <p>Играют обычной колодой из <b>52 карт</b>: 4 масти по 13 карт. Масти — пики <span class="k sm su-s">♠</span>, червы <span class="k sm su-h">♥</span>, бубны <span class="k sm su-d">♦</span>, трефы <span class="k sm su-c">♣</span>. На сайте у каждой масти свой цвет, чтобы не путать.</p>
+    <p>Карты от младшей к старшей:</p>
+    <div class="row" id="rankRow"></div>
+    <ul>
+      <li><b>J</b> — валет, <b>Q</b> — дама, <b>K</b> — король, <b>A</b> — туз.</li>
+      <li><b>Масти не бывают старше друг друга.</b> Король пик и король червей равны.</li>
+      <li>Туз — самая старшая карта, но в стрите он может стать младшей: A-2-3-4-5 — тоже стрит.</li>
+    </ul>
+    <div class="q" data-a="0"><div class="qt">Что старше: король пик или король червей?</div><div class="opts"><button class="opt">Они равны</button><button class="opt">Король пик</button><button class="opt">Король червей</button></div><div class="fbk" hidden>Равны. В холдеме масть важна только для флеша, а старшинства мастей нет.</div></div>
+  </section>
+
+  <section class="lesson" id="l3" data-t="Раздача">
+    <div class="num">Урок 3</div>
+    <h2>Как проходит одна раздача</h2>
+    <ol class="steps">
+      <li><b>Блайнды</b><span>Два игрока слева от дилера обязательно ставят немного фишек вслепую. Так в банке с самого начала есть за что бороться. Подробнее — в уроке 7.</span></li>
+      <li><b>Каждому по 2 карты</b><span>Закрыто, их видишь только ты. Это твоя «рука».</span><div class="row"><span class="k back"></span><span class="k back"></span></div></li>
+      <li><b>Префлоп — первый круг ставок</b><span>Каждый по очереди решает: играть дальше, повысить или сбросить карты.</span></li>
+      <li><b>Флоп — 3 общие карты</b><span>Дилер открывает три карты в центре стола. Они общие — ими пользуются все. Затем второй круг ставок.</span><div class="row" id="ex3a"></div></li>
+      <li><b>Тёрн — 4-я общая карта</b><span>И третий круг ставок.</span><div class="row" id="ex3b"></div></li>
+      <li><b>Ривер — 5-я, последняя общая карта</b><span>И последний круг ставок.</span><div class="row" id="ex3c"></div></li>
+      <li><b>Вскрытие</b><span>Кто дошёл до конца, показывает карты. Лучшая комбинация забирает банк. Потом кнопка дилера сдвигается на одного игрока, и начинается новая раздача.</span></li>
+    </ol>
+    <div class="note"><b>Главное правило:</b> твоя комбинация — это лучшие 5 карт из 7 (2 твои + 5 общих). Можно взять обе свои карты, одну или даже ни одной, если лучшее лежит на столе.</div>
+    <div class="q" data-a="2"><div class="qt">Сколько общих карт лежит на столе к концу раздачи?</div><div class="opts"><button class="opt">3</button><button class="opt">4</button><button class="opt">5</button><button class="opt">7</button></div><div class="fbk" hidden>Пять: три на флопе, одна на тёрне, одна на ривере.</div></div>
+  </section>
+
+  <section class="lesson" id="l4" data-t="Комбинации">
+    <div class="num">Урок 4</div>
+    <h2>Комбинации: от сильной к слабой</h2>
+    <p>Выучи этот список — на нём держится вся игра. Чем выше строка, тем сильнее рука. Тусклые карты в примерах не входят в комбинацию.</p>
+    <ol class="combos" id="combos"></ol>
+    <div class="note">Частая ошибка новичков: <b>флеш старше стрита</b>, а <b>фулл-хаус старше флеша</b>. Чем реже собирается комбинация, тем она сильнее.</div>
+    <div class="q" data-a="1"><div class="qt">Что сильнее: стрит или флеш?</div><div class="opts"><button class="opt">Стрит</button><button class="opt">Флеш</button></div><div class="fbk" hidden>Флеш. Пять карт одной масти собираются реже, чем пять карт подряд.</div></div>
+  </section>
+
+  <section class="lesson" id="l5" data-t="Кто выиграл">
+    <div class="num">Урок 5</div>
+    <h2>Кто выиграл: как сравнивают руки</h2>
+    <ol>
+      <li><b>Сначала сравнивают комбинации.</b> Сет бьёт две пары, флеш бьёт стрит — по списку из урока 4.</li>
+      <li><b>Если комбинация одна и та же — сравнивают её карты.</b> Пара тузов старше пары королей, стрит до дамы старше стрита до десятки.</li>
+      <li><b>Если и это совпало — решает кикер.</b> Кикер — следующая по старшинству карта, которая не входит в комбинацию. Пара тузов с королём бьёт пару тузов с дамой.</li>
+      <li><b>Если все пять карт равны — банк делят поровну.</b> Масть ничего не решает.</li>
+    </ol>
+    <p>Примеры (у кого золотая рамка — те карты и составили выигрышную комбинацию):</p>
+    <div id="examples" style="display:flex;flex-direction:column;gap:10px"></div>
+    <h2 style="font-size:17px;margin-top:6px">Потренируйся: кто выиграл?</h2>
+    <p>Смотри на карты обоих и на стол, нажми на победителя. Если руки равны — «Ничья».</p>
+    <div class="drill" id="drill"></div>
+  </section>
+
+  <section class="lesson" id="l6" data-t="Ставки">
+    <div class="num">Урок 6</div>
+    <h2>Что можно делать в свой ход</h2>
+    <div class="tblwrap"><table>
+      <tr><th>Действие</th><th>Что значит</th><th>Когда можно</th></tr>
+      <tr><td>Чек</td><td>Пропустить ход, ничего не ставя</td><td>Только если в этом круге ещё никто не ставил</td></tr>
+      <tr><td>Бет</td><td>Поставить первым</td><td>Если ставок ещё не было</td></tr>
+      <tr><td>Колл</td><td>Уравнять чужую ставку</td><td>Если перед тобой поставили</td></tr>
+      <tr><td>Рейз</td><td>Повысить: поставить больше, чем соперник</td><td>Если перед тобой поставили</td></tr>
+      <tr><td>Фолд</td><td>Сбросить карты и выйти из раздачи. Поставленное раньше остаётся в банке</td><td>Всегда</td></tr>
+      <tr><td>Олл-ин</td><td>Поставить все свои фишки</td><td>Всегда</td></tr>
+    </table></div>
+    <ul>
+      <li>Ходят по очереди <b>по часовой стрелке</b>.</li>
+      <li>Круг ставок заканчивается, когда все оставшиеся поставили поровну (или все сделали чек).</li>
+      <li>Почти всегда играют в <b>безлимитный</b> холдем (No-Limit): поставить можно любую сумму — от большого блайнда до всего стека.</li>
+      <li>Если у тебя кончились фишки, тебя не выгоняют из раздачи: ты в олл-ине и претендуешь на ту часть банка, которую успел уравнять.</li>
+    </ul>
+    <div class="q" data-a="1"><div class="qt">Перед тобой поставили 100. Можно сделать чек?</div><div class="opts"><button class="opt">Да</button><button class="opt">Нет — только фолд, колл или рейз</button></div><div class="fbk" hidden>Нет. Чек возможен, только пока никто не ставил. Если ставка есть — плати, повышай или сбрасывай.</div></div>
+  </section>
+
+  <section class="lesson" id="l7" data-t="Блайнды">
+    <div class="num">Урок 7</div>
+    <h2>Блайнды и кнопка дилера</h2>
+    <p>Перед каждой раздачей круглая фишка с буквой <b>D</b> — кнопка дилера, или <b>баттон</b> — показывает, кто сегодня условный «раздающий». В клубе карты раздаёт крупье, но очередь считают от кнопки.</p>
+    <div class="grid2">
+      <div class="tile"><b>Малый блайнд (SB)</b><span>Первый игрок слева от кнопки. Обязательно ставит половину большого блайнда.</span></div>
+      <div class="tile"><b>Большой блайнд (BB)</b><span>Второй слева от кнопки. Обязательно ставит полную минимальную ставку.</span></div>
+    </div>
+    <ul>
+      <li>Блайнды нужны, чтобы в банке всегда были деньги. Иначе можно было бы бесконечно ждать тузов и ничего не терять.</li>
+      <li>После каждой раздачи кнопка сдвигается на одного игрока — платить блайнды приходится всем по очереди.</li>
+      <li>Размер стола пишут через дробь: «1/2» — малый блайнд 1, большой 2. В турнирах блайнды со временем растут, поэтому сидеть и ждать не выйдет.</li>
+    </ul>
+    <div class="q" data-a="0"><div class="qt">Кто ставит большой блайнд?</div><div class="opts"><button class="opt">Второй игрок слева от кнопки дилера</button><button class="opt">Игрок с кнопкой</button><button class="opt">Тот, кто проиграл прошлую раздачу</button></div><div class="fbk" hidden>Второй слева от кнопки. Первый слева ставит малый блайнд.</div></div>
+  </section>
+
+  <section class="lesson" id="l8" data-t="Позиции">
+    <div class="num">Урок 8</div>
+    <h2>Позиции: почему важно, где ты сидишь</h2>
+    <p>На каждом круге после флопа ходят по очереди, начиная слева от кнопки. Кто ходит <b>последним</b>, видит, что сделали все остальные — и решает с этой информацией. Это огромное преимущество.</p>
+    <svg class="seatmap" viewBox="0 0 420 250" role="img" aria-label="Позиции за столом на 9 игроков">
+      <ellipse cx="210" cy="125" rx="150" ry="80" fill="var(--felt)" stroke="var(--felt-edge)" stroke-width="8"/>
+      <g id="seats"></g>
+    </svg>
+    <div class="grid2">
+      <div class="tile"><b style="color:#2a78d6">Ранние: UTG, UTG+1</b><span>Ходишь первым, за тобой ещё полстола. Входи только с сильными руками.</span></div>
+      <div class="tile"><b style="color:var(--accent)">Средние: MP, LJ</b><span>Можно чуть шире, но осторожно.</span></div>
+      <div class="tile"><b style="color:#b07400">Поздние: HJ, CO, BTN</b><span>Лучшие места. На баттоне после флопа ходишь последним — тут можно играть больше всего рук.</span></div>
+      <div class="tile"><b style="color:#7a8580">Блайнды: SB, BB</b><span>Уже поставили, но после флопа ходят первыми. Самые неудобные позиции.</span></div>
+    </div>
+    <p>Какие руки разыгрывать с каждой позиции — в <a href="guide.html#open">шпаргалке</a>.</p>
+    <div class="q" data-a="2"><div class="qt">Какая позиция самая выгодная?</div><div class="opts"><button class="opt">Большой блайнд</button><button class="opt">UTG — первый</button><button class="opt">Баттон</button></div><div class="fbk" hidden>Баттон: после флопа ты всегда ходишь последним и видишь, что сделали остальные.</div></div>
+  </section>
+
+  <section class="lesson" id="l9" data-t="Виды покера">
+    <div class="num">Урок 9</div>
+    <h2>Какие бывают виды покера и форматы</h2>
+    <div class="tblwrap"><table>
+      <tr><th>Игра</th><th>Чем отличается</th></tr>
+      <tr><td>Техасский холдем</td><td>2 своих карты + 5 общих. Самый популярный, его учим здесь.</td></tr>
+      <tr><td>Омаха</td><td>4 своих карты, но в комбинацию берёшь <b>ровно 2</b> из них и ровно 3 со стола. Руки сильнее, банки крупнее.</td></tr>
+      <tr><td>Шорт-дек (6+)</td><td>Колода из 36 карт, без двоек–пятёрок. Флеш здесь старше фулл-хауса.</td></tr>
+      <tr><td>Стад, дро-покер</td><td>Старые виды без общих карт. Встречаются редко.</td></tr>
+    </table></div>
+    <p>Форматы:</p>
+    <div class="grid2">
+      <div class="tile"><b>Кэш-игра</b><span>Фишки равны деньгам. Можно сесть и встать в любой момент, докупить фишки. Блайнды не меняются.</span></div>
+      <div class="tile"><b>Турнир</b><span>Платишь взнос (бай-ин), получаешь стек фишек. Блайнды растут, проигравшие выбывают, призы получают последние оставшиеся — обычно 10–15% участников.</span></div>
+      <div class="tile"><b>Сит-н-гоу</b><span>Маленький турнир на один стол: стартует, как только собрались игроки.</span></div>
+      <div class="tile"><b>Хедз-ап</b><span>Игра один на один.</span></div>
+    </div>
+    <p>Слова, которые услышишь в турнирах: <b>ребай</b> — докупка после вылета, <b>аддон</b> — разовая докупка фишек в перерыве, <b>ре-энтри</b> — повторный вход с новым стеком, <b>ITM</b> — попал в призы, <b>бабл</b> — последнее место без приза.</p>
+    <div class="q" data-a="0"><div class="qt">Чем турнир отличается от кэш-игры?</div><div class="opts"><button class="opt">Блайнды растут, проигравшие выбывают</button><button class="opt">В турнире нет блайндов</button><button class="opt">Ничем</button></div><div class="fbk" hidden>В турнире блайнды растут, а проигравшие выбывают. Играют до победителя, призы получают лучшие.</div></div>
+  </section>
+
+  <section class="lesson" id="l10" data-t="Игроки и деньги">
+    <div class="num">Урок 10</div>
+    <h2>Сколько игроков и сколько денег</h2>
+    <div class="grid2">
+      <div class="tile"><b>Полный стол — 9–10 человек</b><span>Так играют в клубах. Чем больше людей, тем чаще у кого-то сильная рука — играй осторожнее.</span></div>
+      <div class="tile"><b>6-max — до 6 человек</b><span>Популярно онлайн. Рук разыгрывают больше.</span></div>
+      <div class="tile"><b>Стек в кэше</b><span>Обычно садятся со 100 большими блайндами: на столе 1/2 это 200 фишек.</span></div>
+      <div class="tile"><b>Стек в турнире</b><span>Всем дают одинаково, например 10 000–30 000 фишек. Фишки нельзя обменять на деньги.</span></div>
+    </div>
+    <p>Стек удобно считать <b>в больших блайндах</b> (ББ): 5 000 фишек при блайндах 100/200 — это 25 ББ. Чем меньше ББ, тем проще игра: при 10–15 ББ решение почти всегда «олл-ин или фолд» — это тренирует раздел <a href="pushfold.html">Пуш/фолд</a>.</p>
+    <div class="note">В городских клубах фишки обычно не меняются на деньги: платишь за участие, играешь за призы и рейтинг. Игра на деньги в казино в России разрешена только в специальных игорных зонах. На сайте все фишки ненастоящие.</div>
+    <div class="q" data-a="1"><div class="qt">Блайнды 50/100, у тебя 2 000 фишек. Сколько это в ББ?</div><div class="opts"><button class="opt">2</button><button class="opt">20</button><button class="opt">40</button></div><div class="fbk" hidden>20 ББ: 2 000 ÷ 100 (большой блайнд) = 20.</div></div>
+  </section>
+
+  <section class="lesson" id="l11" data-t="Словарь">
+    <div class="num">Урок 11</div>
+    <h2>Словарь: слова, которые ты услышишь</h2>
+    <dl class="gloss">
+      <div><dt>Борд</dt><dd>общие карты на столе</dd></div>
+      <div><dt>Банк</dt><dd>все фишки, поставленные в раздаче</dd></div>
+      <div><dt>Стек</dt><dd>твои фишки</dd></div>
+      <div><dt>Лимп</dt><dd>просто уравнять большой блайнд до флопа, не повышая</dd></div>
+      <div><dt>3-бет</dt><dd>повышение после чужого рейза</dd></div>
+      <div><dt>Кикер</dt><dd>карта, которая решает при равных комбинациях</dd></div>
+      <div><dt>Натс</dt><dd>лучшая возможная рука на этом борде</dd></div>
+      <div><dt>Дро</dt><dd>недобор: не хватает одной карты до стрита или флеша</dd></div>
+      <div><dt>Ауты</dt><dd>карты, которые усилят твою руку до лучшей</dd></div>
+      <div><dt>Сет / трипс</dt><dd>три одинаковых: сет — карманная пара + карта на столе, трипс — одна твоя + две на столе</dd></div>
+      <div><dt>Карманная пара</dt><dd>две одинаковые карты на руках</dd></div>
+      <div><dt>Одномастные</dt><dd>две твои карты одной масти, пишут «s»: AKs</dd></div>
+      <div><dt>Эквити</dt><dd>шанс выиграть банк, если доиграть до конца</dd></div>
+      <div><dt>Пуш</dt><dd>олл-ин</dd></div>
+      <div><dt>Блеф</dt><dd>ставка со слабой рукой, чтобы соперник сбросил</dd></div>
+      <div><dt>Тилт</dt><dd>игра на эмоциях после проигрыша</dd></div>
+      <div><dt>Фиш</dt><dd>слабый игрок</dd></div>
+      <div><dt>Рег</dt><dd>опытный постоянный игрок</dd></div>
+    </dl>
+    <p>Больше терминов — в <a href="guide.html#terms">шпаргалке</a>.</p>
+  </section>
+
+  <section class="lesson final" id="l12" data-t="Тест">
+    <div class="num">Урок 12</div>
+    <h2>Итоговый тест</h2>
+    <p>8 вопросов по всему, что было выше. Отвечай не подглядывая.</p>
+    <div id="final"></div>
+  </section>
+
+  <section class="lesson" id="next">
+    <h2>Что дальше</h2>
+    <p>Садись за стол в режиме новичка: справа будет блок «Что происходит» — он объясняет каждую улицу, твою комбинацию и кнопки, а после вскрытия — кто и почему выиграл. Тренер сразу оценивает решения.</p>
+    <div class="cta"><a class="btn primary" href="play.html?newb=1&amp;hint=1" id="goPlay">Сесть за стол в режиме новичка</a><a class="btn" href="guide.html">Шпаргалка</a><a class="btn" href="pushfold.html">Пуш/фолд</a></div>
+  </section>
+</div>
+
+<script src="ranges.js"></script>
+<script src="sd.js"></script>
+<script>
+'use strict';
+/* card helpers: 'Ah' -> int (rank<<2 | suit) as in ranges.js */
+const RK='23456789TJQKA';
+const cid=s=>RK.indexOf(s[0])*4+SUITS.indexOf(s[1]);
+const cards=str=>str.split(' ').map(cid);
+function kHTML(c,o={}){ const r=RANKS[c>>2], s=SUITS[c&3]; return `<span class="k${o.sm?' sm':''}${o.dim?' dim':''}${o.win?' win':''} su-${s}">${r==='T'?'10':r}<i>${SUIT_SYM[s]}</i></span>`; }
+const row=(list,o={})=>list.map(c=>kHTML(c,{...o,win:o.win&&o.win.has(c),dim:o.dimSet&&o.dimSet.has(c)})).join('');
+
+/* lesson 2: ranks */
+document.getElementById('rankRow').innerHTML=RK.split('').map((r,i)=>kHTML(i*4+3,{sm:true})).join('');
+/* lesson 3: a board appearing street by street */
+const ex=cards('Kh 9c 4d 7s Ah');
+document.getElementById('ex3a').innerHTML=row(ex.slice(0,3),{sm:true});
+document.getElementById('ex3b').innerHTML=row(ex.slice(0,3),{sm:true,dimSet:new Set(ex.slice(0,3))})+kHTML(ex[3],{sm:true});
+document.getElementById('ex3c').innerHTML=row(ex.slice(0,4),{sm:true,dimSet:new Set(ex.slice(0,4))})+kHTML(ex[4],{sm:true});
+
+/* lesson 4: combos */
+const COMBOS=[
+ ['Роял-флеш','Туз, король, дама, валет, десятка одной масти. Самая сильная рука.','Ah Kh Qh Jh Th',''],
+ ['Стрит-флеш','Пять карт подряд одной масти.','9s 8s 7s 6s 5s',''],
+ ['Каре','Четыре карты одного достоинства.','Qs Qh Qd Qc','7d'],
+ ['Фулл-хаус','Три одинаковых + две одинаковых.','Kd Ks Kc 4h 4s',''],
+ ['Флеш','Пять карт одной масти, не подряд.','Ad Jd 8d 6d 2d',''],
+ ['Стрит','Пять карт подряд, любые масти.','Tc 9d 8h 7s 6c',''],
+ ['Сет / трипс','Три одинаковых.','7h 7s 7d','Kc 2s'],
+ ['Две пары','Две разные пары.','Jh Js 5c 5d','Ah'],
+ ['Пара','Две одинаковых.','Ac As','Kd 9h 3c'],
+ ['Старшая карта','Ничего не собралось — играет самая старшая карта.','Ah','Qd 9c 6s 3h']];
+document.getElementById('combos').innerHTML=COMBOS.map(([n,d,a,b],i)=>`<li><span class="n">${i+1}</span><div class="d"><b>${n}</b><span>${d}</span></div><div class="row">${row(cards(a),{sm:true})}${b?row(cards(b),{sm:true,dimSet:new Set(cards(b))}):''}</div></li>`).join('');
+
+/* lesson 5: worked examples + drill */
+function showdownHTML(p1,p2,board,names,reveal){
+  const d1=FlopSD.describe(p1,board), d2=FlopSD.describe(p2,board);
+  const win=d1.score>d2.score?1:d2.score>d1.score?2:0;
+  const wset=new Set(win===1?d1.cards:win===2?d2.cards:[...d1.cards,...d2.cards]);
+  const o={sm:false,win:reveal?wset:null};
+  const w=win===1?d1:d2, l=win===1?d2:d1, wn=win===1?names[0]:names[1], ln=win===1?names[1]:names[0];
+  const verdict=win===0?`У обоих ${d1.text}. ${FlopSD.why(d1,d2)}`:`У ${wn} ${w.text}, у ${ln} ${l.text}. ${FlopSD.why(w,l)}`;
+  return {win,d1,d2,o,verdict,wset};
+}
+const EXAMPLES=[['7h 7s','Ks Qd','7d Kh 9c 3s 2h'],['Ad Kc','As Jh','Ah 9d 6c 4s 2c'],['Qs Jc','Kd Kh','Th 9s 8d 2c 4h'],['Ah 3c','Ad 2d','Ks Kh 9c 9d 6s']];
+document.getElementById('examples').innerHTML=EXAMPLES.map(([a,b,bd])=>{
+  const p1=cards(a),p2=cards(b),board=cards(bd); const r=showdownHTML(p1,p2,board,['Ани','Бориса']);
+  return `<div class="note" style="display:flex;flex-direction:column;gap:8px"><div class="row" style="gap:14px"><span class="row"><span style="font-size:13px;margin-right:4px">Аня</span>${row(p1,{sm:true,win:r.wset})}</span><span class="row"><span style="font-size:13px;margin-right:4px">Борис</span>${row(p2,{sm:true,win:r.wset})}</span><span class="row"><span style="font-size:13px;margin-right:4px">Стол</span>${row(board,{sm:true,win:r.wset})}</span></div><div>${r.verdict}</div></div>`;
+}).join('');
+
+const drill={n:0,ok:0};
+function deal(){
+  const deck=[...Array(52).keys()]; for(let i=51;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
+  return {p1:deck.slice(0,2),p2:deck.slice(2,4),board:deck.slice(4,9)};
+}
+function newDrill(){
+  let d, tries=0;
+  do{ d=deal(); tries++; const a=FlopSD.describe(d.p1,d.board).cat, b=FlopSD.describe(d.p2,d.board).cat; if(a>=1||b>=1) break; }while(tries<20);
+  const el=document.getElementById('drill');
+  const r=showdownHTML(d.p1,d.p2,d.board,['Ани','Бориса'],true);
+  el.innerHTML=`<div class="felt"><span class="lbl">Стол</span><div class="row">${row(d.board)}</div></div>
+    <div class="players"><button type="button" class="pl" data-w="1"><span class="nm">Аня</span><span class="row">${row(d.p1)}</span><span class="hn"></span></button><button type="button" class="pl" data-w="2"><span class="nm">Борис</span><span class="row">${row(d.p2)}</span><span class="hn"></span></button></div>
+    <button type="button" class="btn tie" data-w="0">Ничья</button>
+    <div class="fbk" id="dfb" hidden></div>
+    <div class="cta" id="dnext" hidden><button type="button" class="btn primary" id="dn">Следующая раздача</button><span class="score" id="dsc"></span></div>`;
+  el.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{
+    if(el.dataset.done==='1') return; el.dataset.done='1';
+    const pick=+b.dataset.w, ok=pick===r.win; drill.n++; if(ok) drill.ok++;
+    const pls=el.querySelectorAll('.pl'); pls[0].querySelector('.hn').textContent=r.d1.text; pls[1].querySelector('.hn').textContent=r.d2.text;
+    pls[0].querySelector('.row').innerHTML=row(d.p1,{win:r.wset}); pls[1].querySelector('.row').innerHTML=row(d.p2,{win:r.wset}); el.querySelector('.felt .row').innerHTML=row(d.board,{win:r.wset});
+    if(r.win) pls[r.win-1].classList.add('right'); if(!ok&&pick) pls[pick-1].classList.add('wrong');
+    const fb=document.getElementById('dfb'); fb.hidden=false; fb.innerHTML=`<b style="color:${ok?'var(--good)':'var(--bad)'}">${ok?'Верно!':'Не совсем.'}</b> ${r.verdict}`;
+    document.getElementById('dnext').hidden=false; document.getElementById('dsc').textContent=`${drill.ok} из ${drill.n}`;
+    if(drill.n>=3) markDone('l5');
+    document.getElementById('dn').onclick=()=>{ el.dataset.done='0'; newDrill(); };
+  });
+}
+newDrill();
+
+/* lesson 8: seat map */
+(function(){
+  const pos=['BTN','SB','BB','UTG','UTG+1','MP','LJ','HJ','CO'], col={BTN:'#b07400',CO:'#b07400',HJ:'#b07400',SB:'#7a8580',BB:'#7a8580',UTG:'#2a78d6','UTG+1':'#2a78d6',MP:'var(--accent)',LJ:'var(--accent)'};
+  let h=''; pos.forEach((p,i)=>{ const a=Math.PI/2+i*2*Math.PI/9; const x=210+178*Math.cos(a), y=125+104*Math.sin(a);
+    h+=`<rect x="${x-30}" y="${y-13}" width="60" height="26" rx="8" fill="var(--surface)" stroke="${col[p]}" stroke-width="2"/><text x="${x}" y="${y+4}" text-anchor="middle" fill="${col[p]}">${p}</text>`;
+    if(p==='BTN') h+=`<circle cx="${x+40}" cy="${y-6}" r="9" fill="#fff" stroke="#999"/><text x="${x+40}" y="${y-2}" text-anchor="middle" fill="#111" style="font-size:10px">D</text>`; });
+  document.getElementById('seats').innerHTML=h;
+})();
+
+/* progress */
+const LES=[...document.querySelectorAll('.lesson[data-t]')];
+let done={}; try{ done=JSON.parse(localStorage.getItem('learn_prog')||'{}')||{}; }catch(e){}
+function markDone(id){ if(done[id]) return; done[id]=1; try{ localStorage.setItem('learn_prog',JSON.stringify(done)); }catch(e){} renderProg(); if(window.Flop&&Flop.ev) Flop.ev('learn_lesson',{lesson:id}); }
+function renderProg(){
+  const n=LES.filter(l=>done[l.id]).length;
+  document.getElementById('bar').style.width=(n/LES.length*100)+'%';
+  document.getElementById('toc').innerHTML=`<small>${n}/${LES.length}</small>`+LES.map((l,i)=>`<a href="#${l.id}" class="${done[l.id]?'done':''}">${i+1}. ${l.dataset.t}</a>`).join('');
+}
+renderProg();
+/* lesson 11 has no question: counts when scrolled into view */
+if('IntersectionObserver' in window){ const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ markDone('l11'); io.disconnect(); } }),{threshold:.6}); io.observe(document.getElementById('l11')); }
+
+/* one-question checks */
+document.querySelectorAll('.lesson .q').forEach(q=>{
+  const a=+q.dataset.a, bs=[...q.querySelectorAll('.opt')], fb=q.querySelector('.fbk'), id=q.closest('.lesson').id;
+  bs.forEach((b,i)=>b.onclick=()=>{
+    if(i===a){ bs.forEach(x=>x.disabled=true); b.classList.add('right'); fb.hidden=false; fb.insertAdjacentHTML('afterbegin','<b style="color:var(--good)">Верно!</b> '); markDone(id); }
+    else { b.classList.add('wrong'); b.disabled=true; }
+  });
+});
+
+/* final test */
+const FINAL=[
+ ['Сколько карт получает каждый игрок в холдеме?',['2','4','5'],0],
+ ['Что сильнее?',['Две пары','Сет (три одинаковых)','Пара тузов'],1],
+ ['Что сильнее: фулл-хаус или флеш?',['Флеш','Фулл-хаус'],1],
+ ['У обоих пара тузов. Что решает?',['Масть','Кикер — следующая по старшинству карта','Кто первым поставил'],1],
+ ['Ты на баттоне. Когда ты ходишь после флопа?',['Первым','Последним','Как повезёт'],1],
+ ['Перед тобой поставили. Какое действие НЕЛЬЗЯ сделать?',['Колл','Чек','Фолд'],1],
+ ['Все сбросили на твою ставку. Что дальше?',['Ты забираешь банк, карты можно не показывать','Нужно показать карты','Раздачу переигрывают'],0],
+ ['В комбинацию идут…',['Только две твои карты','Лучшие 5 из 7: твои 2 и 5 общих','Все 7 карт'],1]];
+(function(){
+  const box=document.getElementById('final'); let i=0, ok=0;
+  function show(){
+    if(i>=FINAL.length){
+      box.innerHTML=`<div class="res">${ok} из ${FINAL.length}</div><p>${ok>=7?'Отлично, правила ты знаешь. Пора за стол!':ok>=5?'Неплохо. Перечитай уроки, где ошибся, — и за стол.':'Стоит пройти уроки ещё раз — это быстро.'}</p><div class="cta"><button class="btn" id="fRe" type="button">Пройти тест заново</button></div>`;
+      document.getElementById('fRe').onclick=()=>{ i=0; ok=0; show(); };
+      if(ok>=5) markDone('l12'); if(window.Flop&&Flop.ev) Flop.ev('learn_test',{score:ok}); return;
+    }
+    const [t,os,a]=FINAL[i];
+    box.innerHTML=`<div class="q"><div class="qt" style="--x:0">${t}</div><div class="opts">${os.map((o,j)=>`<button type="button" class="opt" data-j="${j}">${o}</button>`).join('')}</div><div class="score">Вопрос ${i+1} из ${FINAL.length}</div></div>`;
+    box.querySelector('.qt').style.setProperty('--x','0');
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ const j=+b.dataset.j; box.querySelectorAll('.opt').forEach(x=>x.disabled=true);
+      if(j===a){ ok++; b.classList.add('right'); } else { b.classList.add('wrong'); box.querySelectorAll('.opt')[a].classList.add('right'); }
+      setTimeout(()=>{ i++; show(); }, j===a?600:1400); });
+  }
+  show();
+})();
+document.getElementById('goPlay').onclick=()=>{ try{ localStorage.setItem('pt_newb','1'); }catch(e){} };
+</script>
+<script src="site.js" defer></script>
+</body>
+</html>

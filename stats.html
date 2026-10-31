@@ -138,16 +138,17 @@ td.txt{font-family:var(--body)}
 </head>
 <body>
 <div class="app">
-  <nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="play.html">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html" aria-current="page">Статистика</a></nav>
+  <nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="learn.html">С нуля</a><a href="play.html">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html" aria-current="page">Статистика</a></nav>
   <header>
     <h1>Моя статистика</h1>
     <div class="seg" id="segMode" role="group" aria-label="Режим"><button type="button" data-v="all" aria-pressed="true">Всё</button><button type="button" data-v="c" aria-pressed="false">Кэш</button><button type="button" data-v="t" aria-pressed="false">Турниры</button></div>
   </header>
+  <div class="authnudge" id="authNudge" hidden></div>
 
   <section class="card" id="streak" style="margin-bottom:0">
     <div class="chead"><h2>Ударный режим</h2><span class="goalsel" id="goalsel" role="group" aria-label="Цель на день">цель в день: <button type="button" data-g="10">10</button><button type="button" data-g="20">20</button><button type="button" data-g="40">40</button></span></div>
     <div class="streakc" id="streakc"></div>
-    <p class="note">Очко — сыгранная раздача за столом, решённая задача на ауты или пуш/фолд. Набери дневную цель, чтобы серия не прервалась. Всё хранится только в этом браузере.</p>
+    <p class="note">Очко — сыгранная раздача за столом, решённая задача на ауты или пуш/фолд. Набери дневную цель, чтобы серия не прервалась. Без входа всё хранится только в этом браузере.</p>
   </section>
 
   <div id="emptyAll" class="hero-empty" hidden>
@@ -348,7 +349,7 @@ $('segMode').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; mod
 $('segMap').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; mapMode=b.dataset.v; try{localStorage.setItem('st_map',mapMode);}catch(_){} render(); };
 $('bDl').onclick=()=>{ const t=histTxt(); if(!t) return; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([t],{type:'text/plain'})); a.download='flop-hands.txt'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); };
 $('bCopy').onclick=async e=>{ const t=histTxt(); try{ await navigator.clipboard.writeText(t); e.target.textContent='Скопировано'; setTimeout(()=>e.target.textContent='Скопировать',1600); }catch(_){ e.target.textContent='Не удалось'; } };
-$('bReset').onclick=()=>{ if(!confirm('Удалить всю статистику, ошибки и историю раздач в этом браузере?')) return; try{ ['flop_stats','flop_hist','pt_mtypes','pt_tours','pt_cur'].forEach(k=>localStorage.removeItem(k)); }catch(_){} D={v:1,hands:[],sessions:[],mistakes:[]}; render(); };
+$('bReset').onclick=()=>{ if(!confirm(window.Flop&&Flop.auth&&Flop.auth.user()?'Удалить всю статистику, ошибки и историю раздач — здесь и в аккаунте?':'Удалить всю статистику, ошибки и историю раздач в этом браузере?')) return; try{ ['flop_stats','flop_hist','pt_mtypes','pt_tours','pt_cur'].forEach(k=>localStorage.removeItem(k)); }catch(_){} if(window.Flop&&Flop.auth&&Flop.auth.user()) Flop.auth.sync({force:true}); D={v:1,hands:[],sessions:[],mistakes:[]}; render(); };
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{render();streakCard();});
 const FL='<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2c.6 3.2-1 5-2.6 6.8C8 10.4 6.5 12 6.5 14.8A5.5 5.5 0 0 0 12 20.3a5.5 5.5 0 0 0 5.5-5.5c0-2.3-1-4.1-2.2-5.4-.2 1.4-.9 2.5-2 3 .5-3.3-.1-7.2-1.3-10.4z"/></svg>';
 function streakCard(){

@@ -122,6 +122,8 @@ select{font:inherit;border:1px solid var(--line);background:var(--surface);color
 .pre{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:7px;padding:5px 9px;font-size:12px;font-weight:600}
 .pre.rec{border-color:var(--accent);color:var(--accent)}
 .waiting{color:var(--muted);font-size:13px;text-align:center;padding:8px}
+.sdx{flex:1 1 100%;text-align:center;font-size:13px;line-height:1.4;color:var(--ink2);max-width:560px}
+.card.win{transform:translateY(-3px)}
 .nextrow{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
 /* coach */
 .coach{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
@@ -136,6 +138,12 @@ select{font:inherit;border:1px solid var(--line);background:var(--surface);color
 .grade.hint{background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent)}
 .fb .t{font-size:13.5px}
 .fb .why{font-size:13px;line-height:1.5;color:var(--ink2);background:var(--bg);border-radius:8px;padding:8px 10px;margin:2px 0}
+.newb{background:color-mix(in srgb,var(--accent) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.45;display:flex;flex-direction:column;gap:6px}
+.newb .nh{font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.newb p{margin:0;color:var(--ink2)}
+.newb b{color:var(--ink)}
+.newb a{color:var(--accent)}
+@media (max-width:640px){ .newb{font-size:12.5px;padding:7px 10px;gap:4px;max-height:26vh;overflow-y:auto;flex:0 0 auto} .newb .nh{display:none} }
 .explain{font-size:13px;color:var(--ink2)}
 .explain summary{cursor:pointer;font-weight:600;color:var(--ink)}
 .explain p{margin:6px 0 0}
@@ -180,6 +188,20 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .sitenav a:hover{color:var(--ink);text-decoration:underline}
 .sitenav .brand{font-family:var(--display);font-weight:700;color:var(--ink);font-size:16px;margin-right:6px}
 .sitenav a[aria-current]{color:var(--ink);font-weight:700}
+
+/* ===== laptops with short screens (Windows 125–150% scaling): table + buttons in one window ===== */
+@media (min-width:641px){ .tablewrap{margin-inline:auto;width:100%} }
+@media (min-width:641px) and (max-height:900px){
+  .app{padding-block:4px 24px;gap:10px}
+  header h1{display:none}
+  .sitenav{margin-bottom:0;padding:6px 0}
+  .actions{padding:10px;gap:8px}
+  .abtn{padding:10px 10px}
+  .cfgsum{display:none}
+}
+.work.side aside.coach{position:sticky;top:52px}
+.work.side .actions{border:0;padding:0 0 12px;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
+.work.side .abtn{flex:1 1 90px;padding:12px 6px}
 
 /* ===== phone layout ===== */
 @media (max-width:640px){
@@ -251,7 +273,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
 <body>
 
 <div class="app">
-<nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="play.html" aria-current="page">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html">Статистика</a></nav>
+<nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">Флоп</a><a href="learn.html">С нуля</a><a href="play.html" aria-current="page">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html">Статистика</a></nav>
   <header>
     <h1>Покерный тренажёр</h1>
     <div class="hstats">
@@ -282,6 +304,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
       <div class="actions" id="actions"></div>
     </div>
     <aside class="coach">
+      <div class="newb" id="newb" hidden></div>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
         <h2>Тренер</h2>
         <label class="chk"><input type="checkbox" id="chkHint"> подсказка до хода</label>
@@ -607,6 +630,12 @@ async function finishHand(){
   }
   const h=hero(); const net=h.stack-h.handStart;
   G.lastResult={net,showdown,winners:[...won.keys()],won};
+  if(showdown && window.FlopSD){
+    const sd=contenders.map(p=>({seat:p.seat,d:FlopSD.describe(p.cards,G.board)}));
+    const top=Math.max(...sd.map(x=>x.d.score)); const wc=new Set();
+    sd.filter(x=>x.d.score===top).forEach(x=>x.d.cards.forEach(c=>wc.add(c)));
+    G.lastResult.sd=sd; G.lastResult.winCards=wc;
+  }
   // stats
   S.hands++; if(G.heroVpip)S.vpip++; if(G.heroPfr)S.pfr++; if(G.heroLimp)S.limps++;
   S.net = MODE==='tour' ? h.stack-START : h.stack - S.buyins*START;
@@ -906,7 +935,7 @@ function gradeAction(adv,a){
 /* ================= hero input ================= */
 function heroAct(){
   return new Promise(async res=>{
-    const h=hero(); const toCall=G.currentBet-h.bet;
+    const h=hero(); const toCall=G.currentBet-h.bet; newbUpdate();
     const othersCanAct=G.players.some(q=>q!==h&&canAct(q));
     const maxTo=h.bet+h.stack; const minTo=Math.min(G.currentBet+G.minRaise,maxTo);
     const canRaise=h.stack>toCall && othersCanAct;
@@ -946,7 +975,7 @@ function waitNext(){
   return new Promise(res=>{
     const h=hero(), r=G.lastResult;
     if(G.over){ const pl=G.over.place; $('actions').innerHTML=`<div class="nextrow" style="flex-direction:column;gap:6px"><span class="result" style="font-size:18px;color:${pl===1?'var(--good)':'var(--ink)'}">${pl===1?'Победа! Ты выиграл турнир':`Турнир окончен: ${pl} место из 9`}</span><span style="color:var(--muted);font-size:13px">${T.hands} раздач · последний уровень ${M(SB)}/${M(BB)}</span><button type="button" class="abtn raise" id="aNext" style="flex:0 1 240px">Новый турнир</button></div>`; $('aNext').onclick=()=>{ G.newGamePending=true; res(); }; return; }
-    $('actions').innerHTML=`<div class="nextrow"><span class="result ${r.net>0?'':''}" style="color:${r.net>0?'var(--good)':r.net<0?'var(--bad)':'var(--ink2)'}">${r.net>0?'Выиграл':r.net<0?'Проиграл':'Без изменений:'} ${r.net? M(Math.abs(r.net)):''}</span><button type="button" class="abtn raise" id="aNext" style="flex:0 1 240px">Следующая раздача</button></div>`;
+    $('actions').innerHTML=`<div class="nextrow"><span class="result ${r.net>0?'':''}" style="color:${r.net>0?'var(--good)':r.net<0?'var(--bad)':'var(--ink2)'}">${r.net>0?'Выиграл':r.net<0?'Проиграл':'Без изменений:'} ${r.net? M(Math.abs(r.net)):''}</span><button type="button" class="abtn raise" id="aNext" style="flex:0 1 240px">Следующая раздача</button>${(()=>{const x=sdExplain(); return x?`<div class="sdx">${x}</div>`:'';})()}</div>`;
     $('aNext').onclick=()=>res(); $('aNext').focus({preventScroll:true});
     if(speed===0 && !testMode && h.folded && !G.heroVpip){ const hn=G.handNo; setTimeout(()=>{ if(G.handNo===hn && $('aNext')) res(); },450); }
   });
@@ -954,7 +983,7 @@ function waitNext(){
 
 /* ================= render ================= */
 const $=id=>document.getElementById(id);
-function cardHTML(c,opts={}){ if(c==null) return ''; if(opts.back) return `<div class="card back${opts.big?' big':''}"></div>`; const s=SUITS[c&3]; return `<div class="card${opts.big?' big':''}${opts.dim?' dim':''}"><span class="r su-${s}">${RANKS[c>>2]==='T'?'10':RANKS[c>>2]}</span><span class="s su-${s}">${SUIT_SYM[s]}</span></div>`; }
+function cardHTML(c,opts={}){ if(c==null) return ''; if(opts.back) return `<div class="card back${opts.big?' big':''}"></div>`; const s=SUITS[c&3]; const wc=G.lastResult&&G.lastResult.winCards; return `<div class="card${opts.big?' big':''}${opts.dim?' dim':''}${wc&&wc.has(c)?' win':''}"><span class="r su-${s}">${RANKS[c>>2]==='T'?'10':RANKS[c>>2]}</span><span class="s su-${s}">${SUIT_SYM[s]}</span></div>`; }
 function seatXY(i){ const narrow=matchMedia('(max-width:640px)').matches; const a=Math.PI/2+i*2*Math.PI/9; const rx=narrow?39:43, ry=narrow?41:41; return [50+rx*Math.cos(a),50+ry*Math.sin(a)]; }
 function render(){
   const t=$('table'); t.querySelectorAll('.seat,.dealer,.chips').forEach(e=>e.remove());
@@ -978,8 +1007,56 @@ function render(){
   else { $('lbNet').textContent='сессия'; $('lbHands').textContent='раздач'; const net=h.stack-S.buyins*START; sn.textContent=(net>0?'+':net<0?'−':'')+'$'+Math.abs(net); sn.style.color=net>0?'var(--good)':net<0?'var(--bad)':''; }
   if(MODE!=='tour') $('hsHands').textContent=S.hands; $('hsVpip').textContent=S.hands?`${pct(S.vpip/S.hands)} / ${pct(S.pfr/S.hands)}`:'—';
   $('msg').textContent = G.lastResult? resultMsg() : '';
+  newbUpdate();
 }
-function resultMsg(){ const r=G.lastResult; const ws=[...r.won.keys()].map(s=>s===0?'Ты':G.players[s].ru); return ws.length?`${ws.join(', ')} ${ws.length>1?'забирают':'забирает'} банк`:''; }
+/* ===== «Я новичок»: plain-language narration of what is happening ===== */
+let NEWB=false;
+const POS_NEWB={UTG:'UTG — первый после блайндов, ходишь раньше всех. Играй только сильные руки.',UTG1:'UTG+1 — ранняя позиция, после тебя ходят почти все. Играй только сильные руки.',MP:'MP — средняя позиция. Можно чуть больше рук, чем в ранней.',LJ:'LJ — средняя позиция, ближе к концу круга.',HJ:'HJ — поздняя позиция, за тобой ещё три игрока.',CO:'CO — предпоследнее место перед баттоном, хорошая позиция.',BTN:'BTN (баттон, «дилер») — лучшее место: после флопа ходишь последним и видишь, что сделали все.',SB:'SB — малый блайнд: ты обязательно поставил половину большого блайнда. После флопа ходишь первым — это неудобно.',BB:'BB — большой блайнд: ты обязательно поставил полную ставку. Если никто не повысит, можешь бесплатно посмотреть флоп.'};
+const STREET_NEWB={pre:'<b>Префлоп.</b> Каждому раздали по 2 закрытые карты. Общих карт на столе пока нет — решаешь только по своим.',flop:'<b>Флоп.</b> На стол выложили 3 общие карты. Их использует каждый игрок вместе со своими двумя.',turn:'<b>Тёрн.</b> Четвёртая общая карта. Ставки обычно становятся крупнее.',river:'<b>Ривер.</b> Пятая, последняя общая карта. После этого круга ставок — вскрытие.'};
+function holeNewb(c){ if(!window.FlopSD) return ''; const N=FlopSD.NOM, Gn=FlopSD.GEN, r1=c[0]>>2, r2=c[1]>>2, hi=Math.max(r1,r2), lo=Math.min(r1,r2);
+  if(r1===r2) return `карманная пара — ${(r1===9||r1===11||r1===12)?'два':'две'} ${Gn[r1]}`;
+  return `${N[hi]} и ${N[lo]}, ${(c[0]&3)===(c[1]&3)?'одной масти (шанс собрать флеш)':'разных мастей'}${hi-lo===1||(hi===12&&lo===0)?', идут подряд (шанс собрать стрит)':''}`; }
+function newbUpdate(){
+  const box=$('newb'); if(!box) return; box.hidden=!NEWB; if(!NEWB) return;
+  if(!G.handNo){ box.innerHTML='<div class="nh">Что происходит</div><p>Здесь я буду объяснять каждый шаг: какие карты на столе, что у тебя собралось и что значат кнопки.</p>'; return; }
+  const h=hero(), out=[];
+  if(G.lastResult){
+    out.push(G.lastResult.showdown?'<b>Вскрытие.</b> Оставшиеся игроки открыли карты, у кого лучшая комбинация из пяти карт — тот забирает банк. Объяснение — над кнопкой «Следующая раздача».':'<b>Раздача закончилась.</b> Все, кроме одного, сбросили карты — он забирает банк, не показывая руку.');
+  } else {
+    out.push(STREET_NEWB[G.street]||'');
+    if(h.cards.length){
+      if(G.board.length>=3&&window.FlopSD){ const d=FlopSD.describe(h.cards,G.board); out.push(`Твоя лучшая комбинация сейчас: <b>${d.text}</b>${d.boardPlays?' — но она целиком на столе, она есть у всех':''}.`); }
+      else out.push(`Твои карты: <b>${holeNewb(h.cards)}</b>.`);
+    }
+    if(h.folded) out.push('Ты сбросил карты — в этой раздаче ты уже не участвуешь. Смотри, как доиграют остальные.');
+    else if(G.turn===0){ const tc=G.currentBet-h.bet;
+      out.push(tc>0?`<b>Твой ход.</b> Перед тобой поставили. <b>Фолд</b> — сбросить карты и выйти. <b>Колл ${M(Math.min(tc,h.stack))}</b> — уравнять ставку и играть дальше. <b>Рейз</b> — поставить больше, чтобы соперникам пришлось доплачивать.`
+        :`<b>Твой ход.</b> Ставок ещё нет. <b>Чек</b> — пропустить ход бесплатно. <b>Ставка</b> — поставить первым: соперникам придётся доплатить или сбросить.`);
+      out.push('Не уверен — нажми «Подсказка», тренер скажет, что лучше.'); }
+    const pos=posOf(0); if(G.street==='pre'&&!h.folded&&POS_NEWB[pos]) out.push('Позиция: '+POS_NEWB[pos]);
+  }
+  box.innerHTML='<div class="nh">Что происходит</div>'+out.filter(Boolean).map(t=>`<p>${t}</p>`).join('')+'<p><a href="learn.html">Правила с нуля →</a></p>';
+}
+const FEM=new Set(['Марина','Лена','Оксана','Света']);
+function genName(n){ return /[гкхжшщч]а$/.test(n)?n.slice(0,-1)+'и':/а$/.test(n)?n.slice(0,-1)+'ы':n+'а'; }
+/* «У тебя сет семёрок, у Светы пара королей. Сет старше пары. Банк твой.» */
+function sdExplain(){
+  const r=G.lastResult; if(!r) return '';
+  if(!r.showdown) return r.won.has(0)?'Остальные сбросили карты, поэтому банк твой без вскрытия.':'';
+  if(!r.sd||!window.FlopSD) return '';
+  const L=r.sd.slice().sort((a,b)=>b.d.score-a.d.score), top=L[0].d.score;
+  const ws=L.filter(x=>x.d.score===top), rest=L.filter(x=>x.d.score<top), me=L.find(x=>x.seat===0);
+  const who=x=>x.seat===0?'тебя':genName(G.players[x.seat].ru);
+  if(ws.length>1){
+    let t=`У ${ws.map(who).join(' и у ')} одинаково: ${ws[0].d.text}. ${FlopSD.why(ws[0].d,ws[1].d)}`;
+    if(me&&!ws.includes(me)) t=`У тебя ${me.d.text} — слабее. `+t;
+    return t;
+  }
+  const w=ws[0], o=(w.seat!==0&&me)?me:rest[0];
+  const verdict=w.seat===0?'Банк твой.':`Банк забирает ${G.players[w.seat].ru}.`;
+  return `У ${who(w)} ${w.d.text}, у ${who(o)} ${o.d.text}. ${FlopSD.why(w.d,o.d)} ${verdict}`;
+}
+function resultMsg(){ const r=G.lastResult; const k=[...r.won.keys()]; if(k.length===1&&k[0]===0) return 'Ты забираешь банк'; const ws=k.map(s=>s===0?'ты':G.players[s].ru); return ws.length?`${ws.join(' и ')} ${ws.length>1?'делят':'забирает'} банк`:''; }
 function renderCoach(){
   const box=$('coach');
   if(!G.feedback.length){ box.innerHTML = G.handNo?'<div class="empty">Жду твоего решения.</div>':box.innerHTML; return; }
@@ -1052,6 +1129,7 @@ function showSetup(first){
     <div id="evWrap"><div class="lbl" style="margin-bottom:8px">Как растут блайнды</div>${grp('every','three')}</div>
     <div class="lbl">Соперники</div>${grp('table')}
     <div class="lbl">Темп ботов</div>${grp('speed','four')}
+    <label class="chk" style="font-size:14px"><input type="checkbox" id="suNewb" ${NEWB?'checked':''}> Я новичок: объяснять, что происходит на столе</label>
     <label class="chk" style="font-size:14px"><input type="checkbox" id="suHint" ${st.hint?'checked':''}> Показывать совет тренера до моего хода</label>
     <button type="button" class="go" id="suGo">${first?'Начать игру':'Начать заново'}</button>
     ${first?'':'<button type="button" class="btn" id="suCancel">Отмена</button>'}
@@ -1061,7 +1139,7 @@ function showSetup(first){
   sync(); ov.hidden=false; ov.onclick=null; ov.querySelector('.opt[aria-pressed="true"]').focus();
   if(!first) $('suCancel').onclick=()=>{ ov.hidden=true; };
   $('suGo').onclick=()=>{
-    $('selMode').value=st.mode; $('selEvery').value=st.every; $('selTable').value=st.table; $('selSpeed').value=st.speed; $('chkHint').checked=$('suHint').checked; speed=+st.speed;
+    $('selMode').value=st.mode; $('selEvery').value=st.every; $('selTable').value=st.table; $('selSpeed').value=st.speed; $('chkHint').checked=$('suHint').checked; speed=+st.speed; NEWB=$('suNewb').checked; try{ localStorage.setItem('pt_newb',NEWB?'1':'0'); }catch(_){} newbUpdate();
     try{ localStorage.setItem('pt_mode',st.mode); localStorage.setItem('pt_every',st.every); localStorage.setItem('pt_table',st.table); localStorage.setItem('pt_speed',st.speed); localStorage.setItem('pt_hint',$('suHint').checked?'1':'0'); }catch(_){}
     ov.hidden=true; cfgSummary(); speedLabel();
     if(window.Flop) Flop.ev('game_start',{mode:st.mode,table:st.table,speed:st.speed});
@@ -1080,12 +1158,30 @@ function cycleSpeed(){ const v=$('selSpeed').value; const i=SPEEDS.findIndex(x=>
 /* phone: size the table so table + action bar fill exactly one screen */
 function fitTable(){
   const tw=document.querySelector('.tablewrap'); if(!tw) return;
-  if(innerWidth>640){ tw.classList.remove('fit'); tw.style.height=''; return; }
+  if(innerWidth>640){
+    /* laptops: shrink the table so it and the action bar fit in the window without scrolling */
+    tw.classList.remove('fit'); tw.style.height=''; tw.style.maxWidth='';
+    const t=$('table'), a=$('actions'), aside=document.querySelector('aside.coach'), work=document.querySelector('.work');
+    /* wide but short window: buttons go to the right column, above the coach, so the table keeps its size */
+    const side=innerWidth>960 && innerHeight<900;
+    if(side && a.parentNode!==aside){ aside.insertBefore(a,aside.firstChild); }
+    if(!side && a.parentNode!==tw){ tw.appendChild(a); }
+    const nb=$('newb'); if(nb.parentNode!==aside) aside.insertBefore(nb, side?a.nextSibling:aside.firstChild);
+    else if(side && nb.previousElementSibling!==a) aside.insertBefore(nb,a.nextSibling);
+    work.classList.toggle('side',side);
+    const colW=tw.clientWidth;
+    const top=t.getBoundingClientRect().top+window.scrollY;
+    const reserve=side?12:Math.max(a.offsetHeight,150)+12+10;
+    const w=Math.round(Math.min(colW, Math.max(480,(innerHeight-top-reserve)*1.6)));
+    if(w<colW) tw.style.maxWidth=w+'px';
+    return;
+  }
+  const nb=$('newb'); if(nb.parentNode!==tw) tw.insertBefore(nb,$('actions'));
   const vh=window.innerHeight, top=tw.getBoundingClientRect().top+window.scrollY;
   tw.classList.add('fit'); tw.style.height=Math.max(470, vh-top-4)+'px';
 }
-let fitW=0; function refit(){ if(innerWidth!==fitW){ fitW=innerWidth; fitTable(); } }
-window.addEventListener('resize',refit); window.addEventListener('orientationchange',()=>setTimeout(fitTable,300));
+let fitW=0; function refit(){ if(innerWidth>640 || innerWidth!==fitW){ fitW=innerWidth; fitTable(); } }
+window.addEventListener('resize',refit); if(window.ResizeObserver){ const hdr=document.querySelector('header'); if(hdr) new ResizeObserver(()=>{ if(innerWidth>640) fitTable(); }).observe(hdr); } window.addEventListener('orientationchange',()=>setTimeout(fitTable,300));
 /* ================= boot ================= */
 function newGame(){
   MODE=$('selMode').value; T.every=+$('selEvery').value||10; T.hands=0; T.level=0;
@@ -1100,7 +1196,7 @@ function newGame(){
 async function loop(){ while(true){ await playHand(); if(testMode && (S.hands>=(window.__N||300) || (G.over&&window.__STOPOVER))) { window.__DONE=true; return; } if(testMode && G.over){ newGame(); } } }
 function boot(){
   const d=new Date(),z=n=>String(n).padStart(2,'0'); S.sessionId=`${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`;
-  try{ const sp=localStorage.getItem('pt_speed'); if(sp) $('selSpeed').value=sp; const tb=localStorage.getItem('pt_table'); if(tb) $('selTable').value=tb; $('chkHint').checked=localStorage.getItem('pt_hint')==='1'; }catch(e){}
+  try{ const sp=localStorage.getItem('pt_speed'); if(sp) $('selSpeed').value=sp; const tb=localStorage.getItem('pt_table'); if(tb) $('selTable').value=tb; $('chkHint').checked=localStorage.getItem('pt_hint')==='1'; NEWB=localStorage.getItem('pt_newb')==='1'; }catch(e){}
   speed=+$('selSpeed').value;
   try{ const md=localStorage.getItem('pt_mode'); if(md) $('selMode').value=md; const ev=localStorage.getItem('pt_every'); if(ev) $('selEvery').value=ev; }catch(e){}
   if(window.__MODE) $('selMode').value=window.__MODE;
@@ -1112,7 +1208,7 @@ function boot(){
   $('chkHint').onchange=e=>{ try{localStorage.setItem('pt_hint',e.target.checked?'1':'0');}catch(_){} };
   $('btnStats').onclick=showStats;
   try{ P.local=JSON.parse(localStorage.getItem('pt_mtypes')||'{}')||{}; }catch(e){}
-  try{ const qp=new URLSearchParams(location.search); if(qp.get('mode')) $('selMode').value=qp.get('mode')==='tour'?'tour':'cash'; if(qp.get('hint')==='1') $('chkHint').checked=true; }catch(_){}
+  try{ const qp=new URLSearchParams(location.search); if(qp.get('mode')) $('selMode').value=qp.get('mode')==='tour'?'tour':'cash'; if(qp.get('hint')==='1') $('chkHint').checked=true; if(qp.get('newb')==='1') NEWB=true; }catch(_){}
   $('btnSetup').onclick=()=>showSetup(false); $('btnSpeed').onclick=cycleSpeed; speedLabel();
   cfgSummary();
   if(testMode){ speed=0; loop(); return; }
@@ -1121,6 +1217,7 @@ function boot(){
 }
 boot();
 </script>
+<script src="sd.js"></script>
 <script src="site.js" defer></script>
 </body>
 </html>

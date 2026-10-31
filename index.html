@@ -104,7 +104,9 @@ h2{font-family:var(--display);font-weight:700;font-size:clamp(24px,3vw,34px);let
 .m b{font-weight:600}
 .m span{color:var(--ink2);font-size:14px}
 
-.steps{counter-reset:s;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;list-style:none;padding:0;margin:0}
+.newbie{margin:14px 0 0;color:var(--ink2)}
+.newbie a{color:var(--accent);font-weight:600}
+.steps{counter-reset:s;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;list-style:none;padding:0;margin:0}
 .steps li{counter-increment:s;padding:24px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
 .steps li::before{content:counter(s);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:700;font-family:var(--display);margin-bottom:12px}
 .steps b{display:block;margin-bottom:4px;font-size:17px}
@@ -130,6 +132,7 @@ details p{margin:10px 0 0;color:var(--ink2)}
 footer{border-top:1px solid var(--line);padding-block:28px 40px;font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
 footer a{color:var(--ink2)}
 
+@media (max-width:1060px) and (min-width:881px){ .steps{grid-template-columns:repeat(2,1fr)} }
 @media (max-width:880px){
   .hero{grid-template-columns:1fr;gap:40px;padding-top:16px}
   .grid3,.steps{grid-template-columns:1fr}
@@ -147,7 +150,7 @@ html{touch-action:manipulation}
 <body>
 <header class="topbar"><div class="wrap"><div class="top">
     <a class="brand" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="2" width="26" height="28" rx="5" fill="var(--accent)"/><path d="M16 7c-3 4-8 6.5-8 10.3 0 2.3 1.8 3.9 3.9 3.9 1.3 0 2.4-.6 3.1-1.5-.3 2-1 3.6-2.3 4.8h6.6c-1.3-1.2-2-2.8-2.3-4.8.7.9 1.8 1.5 3.1 1.5 2.1 0 3.9-1.6 3.9-3.9C24 13.5 19 11 16 7z" fill="var(--accent-ink)"/></svg>Флоп</a>
-    <nav aria-label="Разделы"><a href="play.html">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html">Статистика</a><a href="https://t.me/ilya21314" target="_blank" rel="noopener" onclick="window.Flop&&Flop.ev('feedback')">Отзыв</a></nav>
+    <nav aria-label="Разделы"><a href="learn.html">С нуля</a><a href="play.html">Стол с тренером</a><a href="pushfold.html">Пуш/фолд</a><a href="calc.html">Калькулятор</a><a href="outs.html">Ауты</a><a href="guide.html">Шпаргалка</a><a href="stats.html">Статистика</a><a href="https://t.me/ilya21314" target="_blank" rel="noopener" onclick="window.Flop&&Flop.ev('feedback')">Отзыв</a></nav>
   </div></div></header>
 <div class="wrap">
 
@@ -160,6 +163,7 @@ html{touch-action:manipulation}
         <a class="btn" href="pushfold.html">Пуш/фолд</a>
         <a class="btn" href="calc.html">Калькулятор</a>
       </div>
+      <p class="newbie">Ни разу не играл? <a href="learn.html">Правила покера с нуля за 20 минут →</a></p>
       <div class="fine"><span>Бесплатно</span><span>Без регистрации</span><span>Без ставок на деньги</span></div>
     </div>
     <div class="demo" aria-hidden="true">
@@ -206,11 +210,12 @@ html{touch-action:manipulation}
 <section id="start">
   <div class="wrap">
     <h2>С чего начать, если ты новичок</h2>
-    <p class="sub">Три шага по 5–15 минут. Регистрация не нужна — открыл и играешь.</p>
+    <p class="sub">Четыре шага по 5–20 минут. Регистрация не нужна — открыл и играешь.</p>
     <ol class="steps">
+      <li><b>Правила с нуля</b><span>Если путаешься в правилах: 12 коротких уроков — комбинации, кто выиграл, ставки, позиции. С тренажёром и тестом.</span><a class="go" href="learn.html">Учить правила →</a></li>
       <li><b>Позиции и с чем входить</b><span>Пролистай шпаргалку: где ты сидишь и какие руки играть. Это половина успеха до флопа.</span><a class="go" href="guide.html#pos">Открыть шпаргалку →</a></li>
       <li><b>20 задач на пуш/фолд</b><span>Короткий стек — главное место, где теряют турниры. Реши 20 ситуаций и сверься с таблицей.</span><a class="go" href="pushfold.html">Решать задачи →</a></li>
-      <li><b>Турнир с подсказками</b><span>Сыграй турнир на вылет: тренер подскажет до хода и разберёт каждое решение.</span><a class="go" href="play.html?mode=tour&amp;hint=1">Сесть за турнир →</a></li>
+      <li><b>Турнир с подсказками</b><span>Сыграй турнир на вылет в режиме новичка: стол объясняет каждый шаг, тренер подсказывает до хода и разбирает решения.</span><a class="go" href="play.html?mode=tour&amp;hint=1&amp;newb=1">Сесть за турнир →</a></li>
     </ol>
     <p class="sub" style="margin:20px 0 0">Дальше — по 20 раздач или задач в день: так держится серия дней, а навык растёт без зубрёжки.</p>
   </div>

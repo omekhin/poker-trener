@@ -65,3 +65,5 @@
 
 /* Установка как приложение и офлайн-режим */
 if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost')){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
+/* вход и синхронизация прогресса */
+(function(){ var s=document.createElement('script'); s.src='auth.js'; s.defer=true; document.head.appendChild(s); })();
