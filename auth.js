@@ -20,7 +20,7 @@ var proto=Storage.prototype, oSet=proto.setItem, oDel=proto.removeItem;
 proto.setItem=function(k,v){ oSet.apply(this,arguments); if(this===window.localStorage&&!applying&&SYNC.indexOf(k)>=0) schedule(); };
 proto.removeItem=function(k){ oDel.apply(this,arguments); if(this===window.localStorage&&!applying&&SYNC.indexOf(k)>=0) schedule(); };
 function put(k,v){ applying=true; try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){} applying=false; }
-function schedule(){ if(!auth()) return; clearTimeout(timer); timer=setTimeout(function(){ sync(); },5000); }
+function schedule(){ if(!auth()) return; clearTimeout(timer); timer=setTimeout(function(){ timer=null; sync(); },2500); }
 
 /* --- merging: nothing is lost when two devices both played --- */
 function uniq(arr,key){ var seen={}, out=[]; arr.forEach(function(x){ var k=key?key(x):x; if(!seen[k]){ seen[k]=1; out.push(x); } }); return out; }
@@ -157,8 +157,10 @@ function nav(){
 }
 
 window.Flop=window.Flop||{};
-Flop.auth={login:login,logout:logout,sync:sync,user:auth,api:api,nick:nickPrompt};
-function boot(){ nav(); var a=auth(); if(a){ sync(); if(a.nick===undefined) api('me').then(function(m){ saveNick(m&&m.nick); }).catch(function(){}); } document.dispatchEvent(new Event('flop-auth')); }
+var readyRes, ready=new Promise(function(r){ readyRes=r; }); setTimeout(function(){ readyRes(); },8000);
+Flop.auth={login:login,logout:logout,sync:sync,user:auth,api:api,nick:nickPrompt,ready:ready};
+function boot(){ nav(); var a=auth(); if(!a) readyRes(); if(a){ sync().then(readyRes,readyRes); if(a.nick===undefined) api('me').then(function(m){ saveNick(m&&m.nick); }).catch(function(){}); } document.dispatchEvent(new Event('flop-auth')); }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
-document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible'&&auth()&&Date.now()-(+get(LK)||0)>60000) sync(); });
+document.addEventListener('visibilitychange',function(){ if(!auth()) return; if(document.visibilityState==='hidden'&&timer){ clearTimeout(timer); timer=null; sync(); } else if(document.visibilityState==='visible'&&Date.now()-(+get(LK)||0)>60000) sync(); });
+window.addEventListener('pagehide',function(){ if(auth()&&timer){ clearTimeout(timer); timer=null; sync(); } });
 })();

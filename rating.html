@@ -79,7 +79,7 @@ ol.rows{list-style:none;margin:0;padding:0}
   <div class="mine" id="mine" hidden></div>
   <section class="card"><ol class="rows" id="rows"><li class="empty" style="display:block">Загружаю…</li></ol></section>
 
-  <p class="note"><b>Кэш:</b> сумма всех кэш-сессий за столом с учётом проигрышей и докупов, в долларах тренажёра (блайнды $1/$2). <b>Турниры:</b> сколько раз ты занял 1 место в турнире на 9 игроков. В рейтинг попадают только игроки со входом и ником, результаты обновляются после синхронизации.</p>
+  <p class="note"><b>Кэш:</b> сумма всех кэш-сессий за столом с учётом проигрышей и докупов, в долларах тренажёра (блайнды $1/$2). <b>Турниры:</b> сколько раз ты занял 1 место в турнире на 9 игроков. В рейтинг попадают только игроки со входом и ником. Результаты попадают сюда через пару секунд после раздачи.</p>
 </div>
 <script src="site.js" defer></script>
 <script>
@@ -109,7 +109,7 @@ function load(){
 }
 function seg(id,set){ $(id).onclick=e=>{ const b=e.target.closest('button'); if(!b) return; $(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b)); set(b.dataset.v); render(); }; }
 seg('segBoard',v=>board=v); seg('segPer',v=>per=v);
-let tries=0; (function wait(){ if(window.Flop&&Flop.auth) return load(); if(++tries>30) return load(); setTimeout(wait,100); })();
+let tries=0; (function wait(){ if(window.Flop&&Flop.auth) return Flop.auth.ready.then(load); if(++tries>30) return load(); setTimeout(wait,100); })();
 </script>
 </body>
 </html>

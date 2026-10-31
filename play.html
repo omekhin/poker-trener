@@ -144,6 +144,9 @@ select{font:inherit;border:1px solid var(--line);background:var(--surface);color
 .newb b{color:var(--ink)}
 .newb a{color:var(--accent)}
 @media (max-width:640px){ .newb{font-size:12.5px;padding:7px 10px;gap:4px;max-height:26vh;overflow-y:auto;flex:0 0 auto} .newb .nh{display:none} }
+.resume{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-radius:12px;padding:12px 14px}
+.resume b{display:block}.resume span{font-size:13px;color:var(--ink2)}
+.resume .go{width:auto;margin:0;padding:10px 18px}
 .explain{font-size:13px;color:var(--ink2)}
 .explain summary{cursor:pointer;font-weight:600;color:var(--ink)}
 .explain p{margin:6px 0 0}
@@ -425,6 +428,7 @@ function describe(hole,board){
   if(cat===3){ label = h1===h2 && board.some(b=>(b>>2)===h1) ? 'сет' : 'трипс'; }
   if(bsc>=0 && sc===bsc) label+=' (вся комбинация на столе)';
   let draws=[];
+  if(board.length<5 && cat===4){ for(let s=0;s<4;s++){ const n=all.filter(c=>(c&3)===s).length; if(n===4 && hole.some(c=>(c&3)===s)) draws.push('флеш-дро'); } }
   if(board.length<5 && cat<4){
     for(let s=0;s<4;s++){ const n=all.filter(c=>(c&3)===s).length; if(n===4 && hole.some(c=>(c&3)===s)) draws.push('флеш-дро'); }
     let m=0; all.forEach(c=>m|=1<<(c>>2)); const cur=straightHigh(m); let outs=0;
@@ -507,6 +511,7 @@ async function playHand(){
   G.running=true; G.feedback=[]; G.nudged=new Set(); G.lastResult=null; renderCoach(); if(!testMode) $('actions').innerHTML='<div class="waiting">Раздача…</div>';
   // rebuys
   if(G.newGamePending){ G.newGamePending=false; newGame(); }
+  saveGame();
   if(MODE==='tour'){ const lv=Math.min(Math.floor(T.hands/T.every),LEVELS.length-1); if(lv!==T.level){ T.level=lv; toast(`Блайнды выросли: ${M(LEVELS[lv][0])}/${M(LEVELS[lv][1])}`); } [SB,BB]=LEVELS[T.level]; T.hands++; }
   if(MODE==='cash') for(const p of G.players){ if(p.stack<=0){ p.stack=START; G.totalIn+=START; p.rebuys=(p.rebuys||0)+1; if(p.isHero){ S.buyins++; toast('Стек закончился — докупился на $200'); } } }
   G.button=nextActive(G.button); G.handNo++;
@@ -831,6 +836,10 @@ function postAdvice(){
   const pot=potTotal(), toCall=G.currentBet-h.bet, need=toCall>0?toCall/(pot+toCall):0;
   const strongDraw = d.draws.includes('флеш-дро')||d.draws.includes('открытое стрит-дро');
   const eff = eq + (strongDraw && G.street!=='river' ? 0.05 : 0);
+  const fd=d.draws.includes('флеш-дро'), oe=d.draws.includes('открытое стрит-дро'), gs=d.draws.includes('гатшот');
+  const outs=G.street==='river'?0:Math.min(15,(fd?9:0)+(oe?8:gs?4:0)-(fd&&oe?2:fd&&gs?1:0));
+  const drawName=fd&&(oe||gs)?'Флеш-дро и стрит-дро':fd?'Флеш-дро':oe?'Открытое стрит-дро':gs?'Гатшот':'';
+  const drawTxt=outs&&d.cat<4?`${drawName}: ${outs} ${plur(outs,['аут','аута','аутов'])} — примерно ${outs*2}% собрать на следующей карте${G.street==='flop'?`, ${Math.min(60,outs*4)}% до ривера`:''}. `:'';
   const handTxt = d.label + (d.draws.length?` + ${d.draws.join(', ')}`:'');
   const wasAggr = G.preAggr===0;
   let rec, text;
@@ -840,12 +849,13 @@ function postAdvice(){
     else if(eq>=0.6 && d.cat<=1 && !madeStrong){ rec='either'; text=`${d.label[0].toUpperCase()+d.label.slice(1)}: рука неплохая, но не сильная. Можно небольшую ставку (⅓–½ банка) или чек.`; }
     else if(eq>=(G.street==='river'&&n>=2?0.7:0.6)){ rec='bet'; text=`Сильная рука: ставь ~⅔ банка (${M(Math.round(pot*0.66))}). Новички заплатят.`; }
     else if(wasAggr && n<=1 && G.street==='flop'){ rec='either'; text=`Ты рейзил до флопа, против одного соперника: контбет ⅓–½ банка или чек — оба варианта нормальные.`; }
+    else if(strongDraw && G.street!=='river' && n<=2){ rec='either'; text=`${drawTxt}Можно полублеф ½ банка (${M(Math.round(pot*0.5))}): соперник может сбросить, а если заплатит — у тебя есть шанс собрать. Или чек и бесплатная карта.`; }
     else if(eq>=0.4){ rec='check'; text='Средняя рука: чек, держи банк маленьким.'; }
     else { rec='check'; text = n>=2?'Слабая рука против нескольких соперников: чек. Блеф против многих почти не проходит.':'Слабая рука: чек.'; }
   } else {
-    if(eq>=(G.street==='river'||G.raises>=2?0.85:0.72)){ rec='raise'; text=`Очень сильная рука: рейз ~в 3 раза (${M(Math.round(G.currentBet*3))}), забирай деньги.`; }
-    else if(eff>=need){ rec='call'; text=`Колл окупается: шансы ${pct(eff)} против нужных ${pct(need)}.`; }
-    else { rec='fold'; text=`Фолд: шансы ${pct(eff)}, а для колла нужно ${pct(need)}.`; }
+    if(eq>=(G.street==='river'||G.raises>=2?0.85:0.72)){ if(G.canRaiseNow===false){ rec='call'; text='Очень сильная рука, а повысить тут нельзя: соперник уже олл-ин или у тебя не хватает фишек. Колл.'; } else { rec='raise'; text=`Очень сильная рука: рейз ~в 3 раза (${M(Math.round(G.currentBet*3))}), забирай деньги.`; } }
+    else if(eff>=need){ rec='call'; text=`${drawTxt}Колл окупается: шансы ${pct(eff)} против нужных ${pct(need)}.`; }
+    else { rec='fold'; text=`${drawTxt}Фолд: шансы ${pct(eff)}, а для колла нужно ${pct(need)}.`; }
   }
   return {eq,eff,need,pot,toCall,handTxt,rec,text,n,d};
 }
@@ -924,7 +934,8 @@ function nudge(){
 const STREET_RU={pre:'Префлоп',flop:'Флоп',turn:'Тёрн',river:'Ривер'};
 function adviseNow(){ return G.street==='pre'?preAdvice():postAdvice(); }
 function gradeAction(adv,a){
-  const r = G.street==='pre'?gradePre(adv,a):gradePost(adv,a);
+  let r = G.street==='pre'?gradePre(adv,a):gradePost(adv,a);
+  if(G.canRaiseNow===false && a.type==='call' && adv.rec==='raise' && r.g!=='good') r={g:'good',txt:'Верно: колл. Повысить здесь нельзя — соперник уже олл-ин или у тебя не хватает фишек.',yours:r.yours};
   const numbers = G.street==='pre'?`${adv.pos} · ${adv.cls}${adv.limpers?` · лимперов: ${adv.limpers}`:''}`:`${adv.handTxt} · эквити ${pct(adv.eq)}${adv.toCall?` · нужно ${pct(adv.need)}`:''} · против ${adv.n}`;
   const mt=mistakeType(adv,a,r.g); if(mt){ P.local[mt]=(P.local[mt]||0)+1; S.mtypes[mt]=(S.mtypes[mt]||0)+1; try{localStorage.setItem('pt_mtypes',JSON.stringify(P.local));}catch(e){} }
   const prevHint=G.feedback.find(x=>x.grade==='hint'&&x.street===STREET_RU[G.street]&&x.why);
@@ -938,7 +949,7 @@ function heroAct(){
     const h=hero(); const toCall=G.currentBet-h.bet; newbUpdate();
     const othersCanAct=G.players.some(q=>q!==h&&canAct(q));
     const maxTo=h.bet+h.stack; const minTo=Math.min(G.currentBet+G.minRaise,maxTo);
-    const canRaise=h.stack>toCall && othersCanAct;
+    const canRaise=h.stack>toCall && othersCanAct; G.canRaiseNow=canRaise;
     let adv=null;
     const getAdv=()=>{ if(!adv) adv=adviseNow(); return adv; };
     const pot=potTotal();
@@ -1071,7 +1082,23 @@ function saveLocal(){
     const cur={...S,histories:undefined}; localStorage.setItem('pt_cur',JSON.stringify({id:S.sessionId,hands:S.hands,vpip:S.vpip,pfr:S.pfr,limps:S.limps,net:S.net,grades:S.grades,mistakes:S.mistakes.slice(0,15)}));
   }catch(e){}
 }
-function saveAll(){ saveLocal(); }
+function saveAll(){ saveLocal(); if(G.over) clearGame(); }
+/* ===== продолжить игру после перезагрузки или ухода со страницы: снимок между раздачами ===== */
+const GK='pt_game';
+function saveGame(){ if(testMode) return; try{
+  localStorage.setItem(GK,JSON.stringify({v:1,t:Date.now(),MODE,START,SB,BB,T:{...T},table:$('selTable').value,
+    G:{button:G.button,handNo:G.handNo,totalIn:G.totalIn,players:G.players.map(p=>({name:p.name,ru:p.ru,isHero:p.isHero,prof:p.prof,stack:p.stack,seat:p.seat,out:!!p.out,place:p.place||null,rebuys:p.rebuys||0}))},
+    S:{...S,histories:S.histories.slice(-30),mistakes:S.mistakes.slice(0,40)}}));
+}catch(e){} }
+function clearGame(){ try{ localStorage.removeItem(GK); }catch(e){} }
+function loadGame(){ try{ const g=JSON.parse(localStorage.getItem(GK)||'null'); if(!g||g.v!==1||Date.now()-g.t>3*864e5||!g.G||!g.G.handNo) return null; return g; }catch(e){ return null; } }
+function restoreGame(g){
+  MODE=g.MODE; START=g.START; SB=g.SB; BB=g.BB; Object.assign(T,g.T); $('selMode').value=MODE; $('selTable').value=g.table||'club'; $('selEvery').value=String(T.every); $('selEvery').hidden=MODE!=='tour';
+  Object.assign(S,g.S); S.histories=S.histories||[];
+  G.over=null; G.lastResult=null; G.feedback=[]; G.button=g.G.button; G.handNo=g.G.handNo; G.totalIn=g.G.totalIn;
+  G.players=g.G.players.map(p=>({...p,cards:[],folded:true,bet:0,total:0,allin:false,act:''}));
+  cfgSummary(); render(); renderCoach();
+}
 /* «Поделиться»: карточка с результатом турнира или сессии */
 function accTxt(){ const g=S.grades, t=g.good+g.ok+g.bad; return t?pct(g.good/t):'—'; }
 function shareTour(){ if(!window.Flop||!Flop.share) return; const pl=G.over.place;
@@ -1128,10 +1155,12 @@ const SETUP_TXT={mode:{tour:['Турнир на вылет','Стек 5 000, б�
 function cfgSummary(){ const m=$('selMode').value; $('cfgSum').textContent=(m==='tour'?`Турнир · блайнды каждые ${$('selEvery').value} раздач`:'Кэш $1/$2')+` · ${SETUP_TXT.table[$('selTable').value][0].toLowerCase()}`; }
 function showSetup(first){
   const st={mode:$('selMode').value,every:$('selEvery').value,table:$('selTable').value,speed:$('selSpeed').value,hint:$('chkHint').checked};
+  const saved=first?loadGame():null;
   const ov=$('overlay');
   const grp=(key,cls)=>`<div class="opts ${cls||''}" role="group" data-k="${key}">${Object.entries(SETUP_TXT[key]).map(([v,[t,d]])=>`<button type="button" class="opt" data-v="${v}" aria-pressed="${st[key]===v}"><b>${t}</b>${d?`<span>${d}</span>`:''}</button>`).join('')}</div>`;
   ov.innerHTML=`<div class="sheet setup" role="dialog" aria-modal="true" aria-label="Настройки игры">
     <h2>${first?'Во что играем?':'Новая игра'}</h2>
+    ${first&&saved?`<div class="resume"><div><b>${saved.MODE==='tour'?'Незаконченный турнир':'Незаконченная кэш-сессия'}</b><span>${saved.S.hands} ${plur(saved.S.hands,['раздача','раздачи','раздач'])} · твой стек ${saved.MODE==='tour'?Math.round(saved.G.players[0].stack).toLocaleString('ru-RU'):'$'+saved.G.players[0].stack}${saved.MODE==='tour'?` · игроков ${saved.G.players.filter(p=>!p.out).length} из 9`:''}</span></div><button type="button" class="go" id="suResume">Продолжить</button></div><div class="lbl">или начни новую</div>`:''}
     <div class="lbl">Режим</div>${grp('mode')}
     <div id="evWrap"><div class="lbl" style="margin-bottom:8px">Как растут блайнды</div>${grp('every','three')}</div>
     <div class="lbl">Соперники</div>${grp('table')}
@@ -1145,13 +1174,15 @@ function showSetup(first){
   ov.querySelectorAll('.opts').forEach(g=>g.onclick=e=>{ const b=e.target.closest('.opt'); if(!b) return; st[g.dataset.k]=b.dataset.v; sync(); });
   sync(); ov.hidden=false; ov.onclick=null; ov.querySelector('.opt[aria-pressed="true"]').focus();
   if(!first) $('suCancel').onclick=()=>{ ov.hidden=true; };
+  if(saved) $('suResume').onclick=()=>{ ov.hidden=true; restoreGame(saved); speedLabel(); if(window.Flop) Flop.ev('game_resume',{mode:saved.MODE}); loop(); };
   $('suGo').onclick=()=>{
     $('selMode').value=st.mode; $('selEvery').value=st.every; $('selTable').value=st.table; $('selSpeed').value=st.speed; $('chkHint').checked=$('suHint').checked; speed=+st.speed; NEWB=$('suNewb').checked; try{ localStorage.setItem('pt_newb',NEWB?'1':'0'); }catch(_){} newbUpdate();
     try{ localStorage.setItem('pt_mode',st.mode); localStorage.setItem('pt_every',st.every); localStorage.setItem('pt_table',st.table); localStorage.setItem('pt_speed',st.speed); localStorage.setItem('pt_hint',$('suHint').checked?'1':'0'); }catch(_){}
     ov.hidden=true; cfgSummary(); speedLabel();
     if(window.Flop) Flop.ev('game_start',{mode:st.mode,table:st.table,speed:st.speed});
+    clearGame();
     if(first){ newGame(); loop(); }
-    else if(G.running){ G.newGamePending=true; toast('Новая игра начнётся после этой раздачи'); }
+    else if(G.running){ try{ sessionStorage.setItem('pt_autostart','1'); }catch(_){} location.reload(); }
     else { G.newGamePending=true; const nb=$('aNext'); if(nb) nb.click(); }
   };
 }
@@ -1220,6 +1251,8 @@ function boot(){
   cfgSummary();
   if(testMode){ speed=0; loop(); return; }
   fitTable(); fitW=innerWidth; if(document.fonts) document.fonts.ready.then(fitTable);
+  let auto=false; try{ auto=sessionStorage.getItem('pt_autostart')==='1'; sessionStorage.removeItem('pt_autostart'); }catch(_){}
+  if(auto){ newGame(); loop(); return; }
   showSetup(true);
 }
 boot();
