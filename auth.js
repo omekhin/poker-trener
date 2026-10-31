@@ -3,7 +3,7 @@
    Без входа всё по-прежнему хранится только в браузере. */
 (function(){
 'use strict';
-var API='';   // ← вставь сюда адрес функции, например 'https://functions.yandexcloud.net/d4e1abc...'
+var API='https://functions.yandexcloud.net/d4ec4fhnffjodos3c9ki';   // ← вставь сюда адрес функции, например 'https://functions.yandexcloud.net/d4e1abc...'
 if(!API||!window.fetch) return;
 
 var AK='flop_auth', LK='flop_sync_at';
