@@ -17,6 +17,11 @@ button,a,.card,.slot,.dc,.hc,.c,.k{touch-action:manipulation;-webkit-tap-highlig
 .flop-toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:90;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font:600 14px var(--body,system-ui);box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100vw - 32px);text-align:center}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sitenav .streak.done{color:#fdba74}}
 :root[data-theme="dark"] .sitenav .streak.done{color:#fdba74}
+@media (max-width:1300px) and (min-width:641px){
+  .sitenav{gap:6px 12px;font-size:13.5px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .sitenav::-webkit-scrollbar{display:none}
+  .sitenav .brand{margin-right:2px}
+}
 @media (max-width:640px){
   .sitenav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 0 6px;font-size:13px;gap:14px;padding:calc(8px + env(safe-area-inset-top,0px)) 0 8px}
   .sitenav::-webkit-scrollbar{display:none}

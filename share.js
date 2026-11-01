@@ -52,18 +52,18 @@ function share(o){
     var c=draw(o);
     c.toBlob(function(blob){
       var file=new File([blob],'flop-'+(o.kind||'result')+'.png',{type:'image/png'});
-      var coarse=matchMedia('(pointer:coarse)').matches;
-      if(coarse&&navigator.canShare&&navigator.canShare({files:[file]})){
-        navigator.share({files:[file],text:text+' '+url}).then(function(){ if(window.Flop&&Flop.ev) Flop.ev('share_done',{kind:o.kind,via:'native'}); }).catch(function(){});
-        return;
-      }
+      var canFile=!!(navigator.canShare&&navigator.canShare({files:[file]}));
       var src=URL.createObjectURL(blob), ov=document.createElement('div'); closeModal(); ov.id='shOv'; ov.className='fa-ov';
       var tg='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(text);
-      ov.innerHTML='<div class="fa-box sh-box" role="dialog" aria-modal="true" aria-label="Поделиться"><button type="button" class="fa-x" aria-label="Закрыть">×</button><h3>Поделиться</h3><img class="sh-img" alt="Карточка с результатом" src="'+src+'"><div class="fa-row"><a class="fa-btn" href="'+tg+'" target="_blank" rel="noopener" data-via="tg">Отправить в Telegram</a><a class="fa-sec sh-dl" href="'+src+'" download="'+file.name+'" data-via="png">Скачать картинку</a></div><button type="button" class="fa-link" data-via="copy">Скопировать текст со ссылкой</button><p class="fa-sm">Картинку можно скачать и приложить к сообщению в любом чате.</p></div>';
+      ov.innerHTML='<div class="fa-box sh-box" role="dialog" aria-modal="true" aria-label="Поделиться"><button type="button" class="fa-x" aria-label="Закрыть">×</button><h3>Поделиться</h3><img class="sh-img" alt="Карточка с результатом" src="'+src+'">'
+        +(canFile?'<button type="button" class="fa-btn" data-via="native">Отправить картинку</button><div class="fa-row"><a class="fa-sec sh-dl" href="'+tg+'" target="_blank" rel="noopener" data-via="tg">Ссылку в Telegram</a><a class="fa-sec sh-dl" href="'+src+'" download="'+file.name+'" data-via="png">Скачать</a></div>'
+                 :'<div class="fa-row"><a class="fa-btn" href="'+tg+'" target="_blank" rel="noopener" data-via="tg">Отправить в Telegram</a><a class="fa-sec sh-dl" href="'+src+'" download="'+file.name+'" data-via="png">Скачать картинку</a></div>')
+        +'<button type="button" class="fa-link" data-via="copy">Скопировать текст со ссылкой</button><p class="fa-sm">'+(canFile?'«Отправить картинку» откроет меню телефона — выбери Telegram или любой чат.':'Картинку можно скачать и приложить к сообщению в любом чате.')+'</p></div>';
       ov.addEventListener('click',function(e){
         if(e.target===ov||e.target.classList.contains('fa-x')){ closeModal(); return; }
         var v=e.target.closest('[data-via]'); if(!v) return;
         if(window.Flop&&Flop.ev) Flop.ev('share_done',{kind:o.kind,via:v.dataset.via});
+        if(v.dataset.via==='native'){ navigator.share({files:[file]}).catch(function(){}); return; }
         if(v.dataset.via==='copy'){ var t=text+' '+url; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){ toast('Скопировано — вставь в чат'); },function(){ prompt('Скопируй:',t); }); }
       });
       document.body.appendChild(ov);

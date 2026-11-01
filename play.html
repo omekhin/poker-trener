@@ -313,7 +313,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
         <label class="chk"><input type="checkbox" id="chkHint"> подсказка до хода</label>
       </div>
       <div id="coach" style="display:flex;flex-direction:column;gap:10px"><div class="empty">Тренер оценит каждое твоё решение: до флопа по диапазонам для позиции и формуле рейза, после флопа по шансам руки против вероятных рук соперников.</div></div>
-      <details class="explain"><summary>Что значат проценты?</summary>
+      <details class="explain" id="explain" hidden><summary>Что значат проценты?</summary>
         <p><b>Эквити</b> — как часто твоя рука выиграет банк, если доиграть раздачу до конца. 40% значит: из 10 таких раздач ты заберёшь банк примерно 4 раза.</p>
         <p>Тренер считает его не против любых карт, а против рук, с которыми соперник реально мог так сыграть: большая ставка тайтового игрока — это чаще сильная рука, ставка маньяка — что угодно.</p>
         <p><b>«Нужно»</b> — сколько процентов должно хватать, чтобы колл окупался: доплата ÷ банк после колла. Если эквити больше нужного, колл в плюс на дистанции, даже если именно эту раздачу проиграешь.</p>
@@ -1069,7 +1069,8 @@ function sdExplain(){
 }
 function resultMsg(){ const r=G.lastResult; const k=[...r.won.keys()]; if(k.length===1&&k[0]===0) return 'Ты забираешь банк'; const ws=k.map(s=>s===0?'ты':G.players[s].ru); return ws.length?`${ws.join(' и ')} ${ws.length>1?'делят':'забирает'} банк`:''; }
 function renderCoach(){
-  const box=$('coach');
+  const box=$('coach'), ex=$('explain');
+  if(ex) ex.hidden=!G.feedback.some(f=>/\d%/.test((f.text||'')+(f.why||'')+(f.numbers||'')));
   if(!G.feedback.length){ box.innerHTML = G.handNo?'<div class="empty">Жду твоего решения.</div>':box.innerHTML; return; }
   box.innerHTML=G.feedback.map(f=>`<div class="fb ${f.grade}"><div class="top"><span class="grade ${f.grade}">${f.gradeRu}</span><span>${f.street}</span>${f.yours?`<span>· ты: ${f.yours}</span>`:''}</div><div class="t">${f.text}</div>${f.why?`<div class="why">${f.why}</div>`:''}<div class="n">${f.numbers}</div></div>`).join('');
 }

@@ -104,7 +104,7 @@ function login(){
       api('poll',{q:'&code='+encodeURIComponent(r.code)}).then(function(p){
         if(p.token){ clearInterval(pollT); try{ localStorage.setItem(AK,JSON.stringify({token:p.token,name:p.name,username:p.username})); }catch(e){}
           closeModal(); nav(); toast('Вход выполнен: '+p.name+'. Прогресс сохраняется в аккаунте'); if(window.Flop&&Flop.ev) Flop.ev('login');
-          firstSync=true; sync().then(function(){ return api('me'); }).then(function(m){ saveNick(m&&m.nick); if(!(m&&m.nick)) setTimeout(nickPrompt,600); }).catch(function(){}); }
+          firstSync=true; sync().then(function(){ return api('me'); }).then(function(m){ saveNick(m&&m.nick); document.dispatchEvent(new Event('flop-login')); if(!(m&&m.nick)) setTimeout(nickPrompt,600); }).catch(function(){}); }
         else if(p.expired){ clearInterval(pollT); st.innerHTML='<span class="fa-w">Ссылка устарела. Закрой окно и нажми «Войти» ещё раз.</span>'; }
       }).catch(function(){});
     },2000);
@@ -118,7 +118,7 @@ function nickPrompt(then){
   var inp=box.querySelector('#faNick'), er=box.querySelector('#faNe'); inp.focus();
   box.querySelector('#faNl').onclick=closeModal;
   function go(){ var n=inp.value.trim(); if(!/^[A-Za-zА-Яа-яЁё0-9_\- ]{3,16}$/.test(n)){ er.textContent='3–16 символов: буквы, цифры, пробел, _ и -'; er.style.color='#d9480f'; return; }
-    api('nick',{body:{nick:n}}).then(function(r){ saveNick(r.nick); closeModal(); toast('Ник сохранён: '+r.nick); if(window.Flop&&Flop.ev) Flop.ev('nick_set'); if(typeof then==='function') then(); })
+    api('nick',{body:{nick:n}}).then(function(r){ saveNick(r.nick); closeModal(); toast('Ник сохранён: '+r.nick); if(window.Flop&&Flop.ev) Flop.ev('nick_set'); document.dispatchEvent(new Event('flop-login')); if(typeof then==='function') then(); })
       .catch(function(e){ er.style.color='#d9480f'; er.textContent=/409/.test(String(e))?'Этот ник уже занят — придумай другой':'Не получилось сохранить, попробуй ещё раз'; }); }
   box.querySelector('#faNs').onclick=go; inp.addEventListener('keydown',function(e){ if(e.key==='Enter') go(); });
 }

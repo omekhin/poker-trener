@@ -374,7 +374,7 @@ function streakCard(){
     <div class="calleg"><span>меньше</span><span class="d" style="background:${mix(mix(surf,hot,.18),hot,.2)}"></span><span class="d" style="background:${mix(mix(surf,hot,.18),hot,.6)}"></span><span class="d" style="background:${hot}"></span><span>больше</span><span style="margin-left:8px"><span class="d" style="background:${hot};outline:2px solid ${css('--ink')};outline-offset:-2px"></span> цель выполнена</span></div>`;
 }
 streakCard();
-$('shStreak').onclick=()=>{ if(!window.Flop||!Flop.share) return; const I=Flop.info(); let g=[0,0,0]; (D.hands||[]).forEach(h=>{ if(h.g){ g[0]+=h.g[0]; g[1]+=h.g[1]; g[2]+=h.g[2]; } }); const tot=g[0]+g[1]+g[2], n=(D.hands||[]).length;
+$('shStreak').onclick=()=>{ if(!window.Flop||!Flop.share) return; const I=Flop.info(), P=Flop.plural; let g=[0,0,0]; (D.hands||[]).forEach(h=>{ if(h.g){ g[0]+=h.g[0]; g[1]+=h.g[1]; g[2]+=h.g[2]; } }); const tot=g[0]+g[1]+g[2], n=(D.hands||[]).length;
   Flop.share({kind:'streak',eyebrow:'Мой прогресс',big:I.streak?`${I.streak} ${P(I.streak,['день','дня','дней'])} подряд`:`${n} ${P(n,['раздача','раздачи','раздач'])}`,sub:I.streak?'тренируюсь в покер каждый день':'сыграно с тренером',stats:[[n,'раздач с тренером'],[tot?Math.round(g[0]/tot*100)+'%':'—','верных решений'],[I.best,'лучшая серия дней']],text:I.streak?`${I.streak} ${P(I.streak,['день','дня','дней'])} подряд тренирую покер на Флопе`:`${n} раздач с тренером на Флопе`}); };
 
 render();
