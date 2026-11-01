@@ -1,3 +1,26 @@
+/* ===== Общая шапка сайта: одна на всех страницах. На телефоне снизу таб-бар. ===== */
+(function(){
+  var P=(location.pathname.split('/').pop()||'index.html').toLowerCase(); if(P==='') P='index.html';
+  var GROUP={'play.html':'play','pushfold.html':'pf','learn.html':'learn','guide.html':'learn','calc.html':'learn','outs.html':'learn','stats.html':'stats','rating.html':'stats'};
+  var g=GROUP[P]||'';
+  var I={
+    play:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="10" ry="7"/><path d="M8 12h8"/></svg>',
+    pf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+    learn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>',
+    stats:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'};
+  var LOGO='<svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="2" width="26" height="28" rx="5" fill="var(--accent)"/><path d="M16 7c-3 4-8 6.5-8 10.3 0 2.3 1.8 3.9 3.9 3.9 1.3 0 2.4-.6 3.1-1.5-.3 2-1 3.6-2.3 4.8h6.6c-1.3-1.2-2-2.8-2.3-4.8.7.9 1.8 1.5 3.1 1.5 2.1 0 3.9-1.6 3.9-3.9C24 13.5 19 11 16 7z" fill="var(--accent-ink)"/></svg>';
+  var ITEMS=[['play','play.html','Играть'],['pf','pushfold.html','Пуш/фолд'],['learn','learn.html','Учиться'],['stats','stats.html','Статистика']];
+  var SUB={learn:[['learn.html','С нуля'],['guide.html','Шпаргалка'],['calc.html','Калькулятор шансов'],['outs.html','Тренажёр аутов']],stats:[['stats.html','Моя статистика'],['rating.html','Рейтинг']]};
+  function link(it,cls){ return '<a href="'+it[1]+'"'+(cls?' class="'+cls+'"':'')+(g===it[0]?' aria-current="page"':'')+'>'+I[it[0]]+'<span>'+it[2]+'</span></a>'; }
+  var old=document.querySelectorAll('.sitenav, header.topbar'); for(var i=0;i<old.length;i++) old[i].remove();
+  var h=document.createElement('header'); h.className='sitebar'+(P==='play.html'?' is-play':'');
+  h.innerHTML='<nav class="sitenav" aria-label="Разделы"><a class="brand" href="./">'+LOGO+'<span>Флоп</span></a><span class="links">'+ITEMS.map(function(it){ return link(it); }).join('')+'</span><span class="sp"></span></nav>'
+    +(SUB[g]?'<nav class="subnav" aria-label="Подразделы">'+SUB[g].map(function(it){ return '<a href="'+it[0]+'"'+(P===it[0]?' aria-current="page"':'')+'>'+it[1]+'</a>'; }).join('')+'</nav>':'');
+  document.body.insertBefore(h,document.body.firstChild);
+  var setH=function(){ document.documentElement.style.setProperty('--hdr',h.offsetHeight+'px'); }; setH(); window.addEventListener('resize',setH); if(document.fonts) document.fonts.ready.then(setH);
+  if(P!=='play.html'){ var t=document.createElement('nav'); t.className='tabbar'; t.setAttribute('aria-label','Разделы'); t.innerHTML=ITEMS.map(function(it){ return link(it); }).join(''); document.body.appendChild(t); document.documentElement.classList.add('has-tabbar'); }
+})();
+
 /* flop-fbk */
 /* Ударный режим: дневная цель и серия дней. Хранится только в браузере (localStorage). */
 (function(){
@@ -52,18 +75,27 @@
   ym(Number(METRIKA_ID),'init',{ssr:true,webvisor:true,clickmap:true,referrer:document.referrer,url:location.href,accurateTrackBounce:true,trackLinks:true});
   var ok=false; try{ ok=localStorage.getItem('cookie_ok')==='1'; }catch(e){}
   if(ok) return;
-  var b=document.createElement('div');
-  b.setAttribute('role','region'); b.setAttribute('aria-label','Уведомление о cookies');
-  b.style.cssText='position:relative;margin:4px 0 10px;z-index:1;background:#141a17;color:#eef1ef;border-radius:12px;padding:9px 12px;font:13px/1.4 Onest,system-ui,sans-serif;display:flex;gap:10px;flex-wrap:nowrap;align-items:center;flex-wrap:wrap;';
-  b.innerHTML='<span style="flex:1 1 auto">Сайт использует cookies и Яндекс Метрику, чтобы становиться удобнее. Личные данные не собираются. <a href="privacy.html" style="color:#9fd8bc">Подробнее</a></span><button type="button" style="min-height:34px;padding:0 14px;border-radius:9px;flex:0 0 auto;border:0;background:#47b383;color:#06140d;font:600 14px Onest,system-ui,sans-serif;cursor:pointer">Понятно</button>';
+  var b=document.createElement('div'); b.className='cookie-toast'; b.setAttribute('role','region'); b.setAttribute('aria-label','Уведомление о cookies');
+  b.innerHTML='<span>Сайт использует cookies и Яндекс Метрику. <a href="privacy.html">Подробнее</a></span><button type="button">Ок</button>';
   b.querySelector('button').onclick=function(){ try{ localStorage.setItem('cookie_ok','1'); }catch(e){} b.remove(); };
-  function place(){ if(b.isConnected) return; var nav=document.querySelector('.sitenav')||document.querySelector('.topbar');
-    if(nav&&nav.classList.contains('topbar')){ b.style.margin='8px auto'; b.style.maxWidth='1088px'; b.style.width='calc(100% - 32px)'; nav.after(b); }
-    else if(nav) nav.after(b); else { b.style.cssText+=';position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;margin:0 auto;z-index:15'; document.body.appendChild(b); } }
+  function place(){ if(!b.isConnected) document.body.appendChild(b); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',place); else place();
 })();
 
 /* Установка как приложение и офлайн-режим */
+(function(){
+  var deferred=null; window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); deferred=e; document.documentElement.classList.add('can-install'); });
+  var standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone;
+  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  window.Flop=window.Flop||{};
+  Flop.installState=function(){ return standalone?'installed':deferred?'prompt':ios?'ios':'manual'; };
+  Flop.install=function(){
+    if(window.Flop.ev) Flop.ev('install_click');
+    if(deferred){ deferred.prompt(); deferred.userChoice.then(function(c){ if(c&&c.outcome==='accepted'&&Flop.ev) Flop.ev('install_ok'); deferred=null; }); return; }
+    var ov=document.createElement('div'); ov.className='fa-ov'; ov.innerHTML='<div class="fa-box" role="dialog" aria-modal="true"><button type="button" class="fa-x" aria-label="Закрыть">×</button><h3>Флоп на телефоне</h3>'+(ios?'<p>В Safari нажми <b>«Поделиться»</b> (квадрат со стрелкой внизу экрана) → <b>«На экран Домой»</b>. Иконка Флопа появится рядом с приложениями и откроется без адресной строки.</p>':'<p>Открой меню браузера (⋮ справа вверху) → <b>«Установить приложение»</b> или <b>«Добавить на главный экран»</b>.</p>')+'<p class="fa-sm">Работает и без интернета: стол, пуш/фолд и шпаргалка сохраняются на телефоне.</p></div>';
+    ov.addEventListener('click',function(e){ if(e.target===ov||e.target.classList.contains('fa-x')) ov.remove(); }); document.body.appendChild(ov);
+  };
+})();
 if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost')){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
 /* вход и синхронизация прогресса */
-(function(){ ['share.js?v=16','auth.js?v=16'].forEach(function(f){ var s=document.createElement('script'); s.src=f; s.defer=true; document.head.appendChild(s); }); })();
+(function(){ ['share.js?v=17','auth.js?v=17'].forEach(function(f){ var s=document.createElement('script'); s.src=f; s.defer=true; document.head.appendChild(s); }); })();

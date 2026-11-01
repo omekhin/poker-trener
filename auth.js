@@ -149,7 +149,7 @@ function setState(s){ if(stateEl) stateEl.dataset.s=s; }
 function nav(){
   var n=document.querySelector('.sitenav')||document.querySelector('.top nav'); if(!n) return;
   var a=n.querySelector('.acct');
-  if(!a){ a=document.createElement('a'); a.className='acct'; a.href='#'; a.addEventListener('click',function(e){ e.preventDefault(); auth()?account():login(); }); var ref=n.querySelector('.fbk'); ref?n.insertBefore(a,ref):n.appendChild(a); }
+  if(!a){ a=document.createElement('a'); a.className='acct'; a.href='#'; a.addEventListener('click',function(e){ e.preventDefault(); auth()?account():login(); }); n.appendChild(a); }
   var au=auth(); stateEl=a;
   a.textContent=au?(au.nick||(au.name||'Аккаунт').split(' ')[0]):'Войти';
   a.title=au?'Аккаунт: прогресс сохраняется':'Войти через Telegram, чтобы прогресс не потерялся';

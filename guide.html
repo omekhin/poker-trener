@@ -44,8 +44,8 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
-html{scroll-behavior:smooth;scroll-padding-top:64px}
-.app{max-width:980px;margin:0 auto;padding-block:14px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--hdr,56px) + 16px)}
+.app{max-width:860px;margin:0 auto;padding-block:14px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
 h1{font-family:var(--display);font-weight:700;font-size:24px;margin:0}
 .jump{display:flex;gap:6px;flex-wrap:wrap}
 .jump a{font-size:13px;text-decoration:none;color:var(--ink2);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;white-space:nowrap}
