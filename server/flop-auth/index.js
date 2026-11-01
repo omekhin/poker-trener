@@ -64,6 +64,36 @@ function bodyOf(ev) { if (!ev.body) return ''; return ev.isBase64Encoded ? Buffe
 const validCode = c => typeof c === 'string' && /^[A-Za-z0-9_-]{16,64}$/.test(c);
 
 /* ---------- Telegram: бот получает /start <код> ---------- */
+/* ---------- Telegram без вебхука: функция сама забирает сообщения бота (входящие запросы из Telegram в РФ тормозят) ---------- */
+let lastPull = 0;
+async function tgApi(method, body) {
+  const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+  return r.json();
+}
+async function botReply(ctx, m) {
+  if (!m || !m.from || typeof m.text !== 'string') return null;
+  const f = m.from, uid = String(f.id), say = text => ({ chat_id: m.chat.id, text });
+  if (/^\/stop\b/.test(m.text)) { await s3(ctx, 'PUT', `prefs/${uid}.json`, JSON.stringify({ off: true, t: Date.now() })); return say('Ок, напоминания выключены. Включить снова — /remind'); }
+  if (/^\/remind\b/.test(m.text)) { await s3(ctx, 'DELETE', `prefs/${uid}.json`); return say('Напоминания включены: раз в день вечером, если цель дня ещё не выполнена. Выключить — /stop'); }
+  const code = (m.text.match(/^\/start\s+(\S+)/) || [])[1];
+  if (!validCode(code)) return say('Это бот сайта poker-trener.ru. Нажми «Войти» на сайте — бот пришлёт подтверждение сюда.\n\nРаз в день вечером я напоминаю про серию, если цель дня не выполнена. /stop — выключить, /remind — включить.');
+  const name = [f.first_name, f.last_name].filter(Boolean).join(' ').slice(0, 60) || (f.username ? '@' + f.username : 'Игрок');
+  await s3(ctx, 'PUT', `login/${code}.json`, JSON.stringify({ uid, name, username: f.username || null, t: Date.now() }));
+  return say(`Готово, ${f.first_name || 'вход выполнен'}! Возвращайся на сайт — прогресс теперь сохраняется в аккаунте.\n\nРаз в день вечером напомню про серию, если цель дня ещё не выполнена. Не нужно — напиши /stop`);
+}
+async function pullTelegram(ctx) {
+  if (!BOT_TOKEN || Date.now() - lastPull < 1500) return 0;
+  lastPull = Date.now();
+  const st = (await s3(ctx, 'GET', 'tg/offset.json')) || { o: 0 };
+  let r = await tgApi('getUpdates', { offset: st.o, timeout: 0, allowed_updates: ['message'] });
+  if (r && r.error_code === 409) { await tgApi('deleteWebhook', { drop_pending_updates: false }); r = await tgApi('getUpdates', { offset: st.o, timeout: 0, allowed_updates: ['message'] }); }
+  if (!r || !r.ok || !r.result.length) return 0;
+  let max = st.o - 1;
+  for (const u of r.result) { max = Math.max(max, u.update_id); try { const msg = await botReply(ctx, u.message); if (msg) await tgApi('sendMessage', msg); } catch (e) { console.error('bot', e); } }
+  await s3(ctx, 'PUT', 'tg/offset.json', JSON.stringify({ o: max + 1 }));
+  return r.result.length;
+}
+
 async function telegram(ev, ctx) {
   if (!WH_SECRET || hdr(ev, 'x-telegram-bot-api-secret-token') !== WH_SECRET) return { statusCode: 403, body: 'forbidden' };
   let u; try { u = JSON.parse(bodyOf(ev)); } catch (e) { return { statusCode: 200, body: '' }; }
@@ -108,10 +138,13 @@ async function listKeys(ctx, prefix) {
 }
 async function remind(ctx) {
   if (!BOT_TOKEN) return { sent: 0, error: 'no BOT_TOKEN' };
+  try { lastPull = 0; await pullTelegram(ctx); } catch (e) { console.error('pull', e); }
   const users = await listKeys(ctx, 'users/'); let sent = 0, skipped = 0;
   for (const key of users) {
     const uid = key.replace(/^users\//, '').replace(/\.json$/, '');
+    if (!/^\d+$/.test(uid)) continue;                                   // напоминания только тем, кто входил через Telegram
     try {
+      if (!/^\d+$/.test(uid)) { skipped++; continue; }                               // вошёл не через Telegram — писать некуда
       if (await s3(ctx, 'GET', `prefs/${uid}.json`)) { skipped++; continue; }      // выключил /stop
       const rec = await s3(ctx, 'GET', key); if (!rec || !rec.data) continue;
       const s = streakInfo(rec.data);
@@ -214,6 +247,21 @@ async function shareImage(ev, ctx, id) {
   return { statusCode: 200, headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'public, max-age=31536000, immutable' }, body: buf.toString('base64'), isBase64Encoded: true };
 }
 
+/* ---------- вход через Яндекс ID: сайт присылает токен, проверяем его у Яндекса ---------- */
+async function yaLogin(ev) {
+  let p; try { p = JSON.parse(bodyOf(ev)); } catch (e) { return json(ev, 400, { error: 'bad_json' }); }
+  const tok = String(p && p.token || '');
+  if (!/^[A-Za-z0-9_.\-]{20,500}$/.test(tok)) return json(ev, 400, { error: 'bad_token' });
+  const r = await fetch('https://login.yandex.ru/info?format=json', { headers: { Authorization: 'OAuth ' + tok } });
+  if (!r.ok) return json(ev, 401, { error: 'yandex_rejected' });
+  const u = await r.json();
+  const want = process.env.YA_CLIENT_ID || '';
+  if (want && u.client_id && u.client_id !== want) return json(ev, 401, { error: 'wrong_client' });
+  const uid = 'y' + String(u.id);
+  const name = String(u.first_name || u.display_name || u.real_name || u.login || 'Игрок').slice(0, 60);
+  return json(ev, 200, { token: makeToken({ uid, name, u: null, exp: Date.now() + TOKEN_TTL }), name });
+}
+
 /* ---------- основной обработчик ---------- */
 module.exports.handler = async function (ev, ctx) {
   try {
@@ -223,11 +271,26 @@ module.exports.handler = async function (ev, ctx) {
     if (ev.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors(ev), body: '' };
     const q = ev.queryStringParameters || {};
     const a = q.a || '';
+    if (a === 'diag') {                        // проверка, как быстро Telegram доставляет сообщения боту
+      const t0 = Date.now(); let w = {}; try { w = ((await (await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getWebhookInfo`)).json()).result) || {}; } catch (e) { w = { err: String(e) }; }
+      return json(ev, 200, { tgMs: Date.now() - t0, pending: w.pending_update_count, lastErrorAgoSec: w.last_error_date ? Math.round(Date.now() / 1000 - w.last_error_date) : null, lastError: w.last_error_message || null, err: w.err || null });
+    }
+    if (a === 'ya' && ev.httpMethod === 'POST') {    // вход через Яндекс ID
+      let p; try { p = JSON.parse(bodyOf(ev)); } catch (e) { return json(ev, 400, { error: 'bad_json' }); }
+      const r = await fetch('https://login.yandex.ru/info?format=json', { headers: { Authorization: 'OAuth ' + String(p && p.token || '') } });
+      if (!r.ok) return json(ev, 401, { error: 'ya_denied' });
+      const u = await r.json(); if (!u || !u.id) return json(ev, 401, { error: 'ya_denied' });
+      const name = String(u.first_name || u.display_name || u.real_name || u.login || 'Игрок').slice(0, 60);
+      const token = makeToken({ uid: 'ya' + u.id, name, u: null, exp: Date.now() + TOKEN_TTL });
+      return json(ev, 200, { token, name });
+    }
     const sid = typeof q.s === 'string' && /^[A-Za-z0-9_-]{6,12}$/.test(q.s) ? q.s : null, siid = typeof q.si === 'string' && /^[A-Za-z0-9_-]{6,12}$/.test(q.si) ? q.si : null;
     if (sid) return await sharePage(ev, ctx, sid);
     if (siid) return await shareImage(ev, ctx, siid);
     if (a === 'card' && ev.httpMethod === 'POST') return await shareCard(ev, ctx);
+    if (a === 'ya' && ev.httpMethod === 'POST') return await yaLogin(ev);
     if (a === 'tg') return await telegram(ev, ctx);
+    if (a === 'tgping') { const t0 = Date.now(); let me = null, wh = null; try { me = (await (await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getMe`)).json()).ok; } catch (e) { me = 'ERR ' + e.message; } const t1 = Date.now(); try { const w = (await (await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getWebhookInfo`)).json()).result || {}; wh = { pending: w.pending_update_count, lastError: w.last_error_message || null, lastErrorAgoSec: w.last_error_date ? Math.round(Date.now() / 1000 - w.last_error_date) : null, maxConn: w.max_connections, ip: w.ip_address }; } catch (e) { wh = 'ERR ' + e.message; } return json(ev, 200, { me, getMeMs: t1 - t0, wh, whMs: Date.now() - t1 }); }
     if (a === 'remind') {                      // ручная проверка напоминаний: ?a=remind&key=WEBHOOK_SECRET
       if (!WH_SECRET || q.key !== WH_SECRET) return json(ev, 403, { error: 'forbidden' });
       return json(ev, 200, await remind(ctx));
@@ -240,7 +303,8 @@ module.exports.handler = async function (ev, ctx) {
     }
     if (a === 'poll') {                        // сайт ждёт, пока человек нажмёт Start в боте
       if (!validCode(q.code)) return json(ev, 400, { error: 'bad_code' });
-      const rec = await s3(ctx, 'GET', `login/${q.code}.json`);
+      let rec = await s3(ctx, 'GET', `login/${q.code}.json`);
+      if (!rec) { try { if (await pullTelegram(ctx)) rec = await s3(ctx, 'GET', `login/${q.code}.json`); } catch (e) { console.error('pull', e); } }
       if (!rec) return json(ev, 200, { wait: true });
       await s3(ctx, 'DELETE', `login/${q.code}.json`);
       if (Date.now() - rec.t > CODE_TTL) return json(ev, 200, { expired: true });

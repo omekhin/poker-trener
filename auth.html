@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Вход — Флоп</title>
+<style>
+:root{--bg:#eef1ef;--ink:#141a17;--ink2:#47524d;--accent:#1f6a4c}
+@media (prefers-color-scheme:dark){:root{--bg:#101412;--ink:#edf1ef;--ink2:#b4beb9;--accent:#47b383}}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center}
+.sp{width:34px;height:34px;border-radius:50%;border:3px solid color-mix(in srgb,var(--accent) 25%,transparent);border-top-color:var(--accent);animation:r 0.8s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+p{margin:0;color:var(--ink2)} a{color:var(--accent)}
+</style>
+</head>
+<body>
+<main><div class="sp" id="sp"></div><p id="msg">Входим через Яндекс…</p></main>
+<script>
+/* Возврат из Яндекс ID: меняем токен Яндекса на токен Флопа и возвращаемся туда, откуда пришли. */
+(function(){
+  var API='https://functions.yandexcloud.net/d4ec4fhnffjodos3c9ki';
+  var h=new URLSearchParams(location.hash.slice(1)), q=new URLSearchParams(location.search);
+  var back='/'; try{ back=sessionStorage.getItem('flop_return')||'/'; }catch(e){}
+  function fail(t){ document.getElementById('sp').remove(); document.getElementById('msg').innerHTML=t+' <a href="'+back+'">Вернуться на сайт</a>'; }
+  var token=h.get('access_token'), state=h.get('state')||q.get('state'), saved=null;
+  try{ saved=sessionStorage.getItem('flop_ya_state'); }catch(e){}
+  if(h.get('error')||q.get('error')) return fail('Вход отменён.');
+  if(!token) return fail('Яндекс не вернул данные для входа.');
+  if(saved&&state!==saved) return fail('Ссылка входа устарела, попробуй ещё раз.');
+  history.replaceState(null,'',location.pathname);
+  fetch(API+'?a=ya',{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({token:token})})
+    .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
+    .then(function(p){
+      try{ localStorage.setItem('flop_auth',JSON.stringify({token:p.token,name:p.name,username:null,via:'ya'})); sessionStorage.setItem('flop_new_login','1'); sessionStorage.removeItem('flop_ya_state'); }catch(e){}
+      location.replace(back);
+    })
+    .catch(function(){ fail('Не получилось войти. Попробуй ещё раз через минуту.'); });
+})();
+</script>
+</body>
+</html>

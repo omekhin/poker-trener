@@ -7,6 +7,8 @@ var API='https://functions.yandexcloud.net/d4ec4fhnffjodos3c9ki';   // ← вс�
 if(!API||!window.fetch) return;
 
 var AK='flop_auth', LK='flop_sync_at';
+var YA_CLIENT='';               // ← client_id приложения в Яндекс OAuth
+var TG_BOT='floppokerbot';
 var JSONK=['flop_stats','flop_hist','flop_days','pt_tours','pf_stats','ot_stats','pt_mtypes','learn_prog'];
 var RAWK=['flop_goal','pt_newb','pt_hint','pt_speed','pt_table','pt_mode','pt_every','pf_mode'];
 var SYNC=JSONK.concat(RAWK);
@@ -90,10 +92,24 @@ function sync(o){
 
 /* --- login with a Telegram bot deep link: works even where telegram.org scripts are slow --- */
 var pollT=null;
+function rndCode(n){ var a=new Uint8Array(n), s='', abc='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'; crypto.getRandomValues(a); for(var i=0;i<n;i++) s+=abc[a[i]&63]; return s; }
+/* Яндекс ID: быстрый вход без Telegram (Telegram в РФ замедлен) */
+function loginYandex(){
+  if(window.Flop&&Flop.ev) Flop.ev('login_ya_start');
+  var st=rndCode(16); try{ sessionStorage.setItem('flop_ya_state',st); sessionStorage.setItem('flop_return',location.pathname+location.search+location.hash); }catch(e){}
+  location.href='https://oauth.yandex.ru/authorize?response_type=token&client_id='+encodeURIComponent(YA_CLIENT)+'&redirect_uri='+encodeURIComponent(location.origin+'/auth.html')+'&state='+st+'&force_confirm=no';
+}
 function login(){
   if(window.Flop&&Flop.ev) Flop.ev('login_start');
-  var box=modal('<h3>Сохраняй прогресс</h3><p>Войди через Telegram — статистика, серия дней, ошибки и уроки сохранятся в аккаунте. Их будет видно и с телефона, и с компьютера.</p><p class="fa-st" id="faSt">Готовлю ссылку…</p>');
-  api('start').then(function(r){
+  if(YA_CLIENT){
+    var b0=modal('<h3>Сохраняй прогресс</h3><p>Статистика, серия дней, ошибки и уроки сохранятся в аккаунте — их будет видно и с телефона, и с компьютера. Плюс рейтинг.</p><button type="button" class="fa-btn fa-ya" id="faYa"><b>Я</b> Войти с Яндекс ID</button><button type="button" class="fa-link" id="faTg">Войти через Telegram (сейчас может работать медленно)</button><span class="fa-sm">Мы получим только имя — без почты и телефона. В рейтинге видно только ник. Входя, ты соглашаешься с <a href="privacy.html" target="_blank">политикой конфиденциальности</a>.</span>');
+    b0.querySelector('#faYa').onclick=loginYandex; b0.querySelector('#faTg').onclick=loginTelegram; return;
+  }
+  loginTelegram();
+}
+function loginTelegram(){
+  var box=modal('<h3>Вход через Telegram</h3><p>Нажми кнопку — откроется наш бот. Нажми в нём «Запустить» и вернись на эту вкладку.</p><p class="fa-st" id="faSt"></p>');
+  (function(r){
     var st=box.querySelector('#faSt');
     st.innerHTML='<a class="fa-btn" id="faGo" href="'+r.link+'" target="_blank" rel="noopener">Открыть Telegram</a><span class="fa-sm">Нажми «Запустить» (Start) в боте @'+r.bot+' и вернись на эту вкладку. Мы получим только имя и номер аккаунта Telegram — без телефона и переписки. Входя, ты соглашаешься с <a href="privacy.html" target="_blank">политикой конфиденциальности</a>.</span><span class="fa-w" id="faW" hidden>Жду подтверждения из Telegram…</span>';
     box.querySelector('#faGo').addEventListener('click',function(){ box.querySelector('#faW').hidden=false; });
@@ -109,7 +125,7 @@ function login(){
         else if(p.expired){ clearInterval(pollT); st.innerHTML='<span class="fa-w">Ссылка устарела. Закрой окно и нажми «Войти» ещё раз.</span>'; }
       }).catch(function(){});
     },2000);
-  }).catch(function(){ box.querySelector('#faSt').textContent='Сервер входа не отвечает. Попробуй позже — пока всё сохраняется в этом браузере.'; });
+  })((function(){ var c=rndCode(24); return {code:c,link:'https://t.me/'+TG_BOT+'?start='+c,bot:TG_BOT}; })());
 }
 /* --- nickname for the leaderboard: Telegram name is never shown --- */
 function saveNick(n){ var a=auth(); if(!a) return; a.nick=n||null; try{ localStorage.setItem(AK,JSON.stringify(a)); }catch(e){} nav(); }
@@ -160,8 +176,15 @@ function nav(){
 
 window.Flop=window.Flop||{};
 var readyRes, ready=new Promise(function(r){ readyRes=r; }); setTimeout(function(){ readyRes(); },8000);
-Flop.auth={login:login,logout:logout,sync:sync,user:auth,api:api,nick:nickPrompt,ready:ready,apiUrl:API};
-function boot(){ nav(); var a=auth(); if(!a) readyRes(); if(a){ sync().then(readyRes,readyRes); if(a.nick===undefined) api('me').then(function(m){ saveNick(m&&m.nick); }).catch(function(){}); } document.dispatchEvent(new Event('flop-auth')); }
+Flop.auth={loginYandex:loginYandex,login:login,logout:logout,sync:sync,user:auth,api:api,nick:nickPrompt,ready:ready,apiUrl:API};
+function afterRedirectLogin(){
+  var fresh=false; try{ fresh=sessionStorage.getItem('flop_new_login')==='1'; sessionStorage.removeItem('flop_new_login'); }catch(e){}
+  if(!fresh||!auth()) return;
+  toast('Вход выполнен: '+auth().name+'. Прогресс сохраняется в аккаунте'); if(window.Flop&&Flop.ev) Flop.ev('login_ok',{via:'ya'});
+  firstSync=true; sync().then(function(){ return api('me'); }).then(function(m){ saveNick(m&&m.nick); document.dispatchEvent(new Event('flop-login')); if(!(m&&m.nick)) setTimeout(nickPrompt,600); }).catch(function(){});
+  return true;
+}
+function boot(){ nav(); if(afterRedirectLogin()){ readyRes(); document.dispatchEvent(new Event('flop-auth')); return; } var a=auth(); if(!a) readyRes(); if(a){ sync().then(readyRes,readyRes); if(a.nick===undefined) api('me').then(function(m){ saveNick(m&&m.nick); }).catch(function(){}); } document.dispatchEvent(new Event('flop-auth')); }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 document.addEventListener('visibilitychange',function(){ if(!auth()) return; if(document.visibilityState==='hidden'&&timer){ clearTimeout(timer); timer=null; sync(); } else if(document.visibilityState==='visible'&&Date.now()-(+get(LK)||0)>60000) sync(); });
 window.addEventListener('pagehide',function(){ if(auth()&&timer){ clearTimeout(timer); timer=null; sync(); } });
