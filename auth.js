@@ -124,7 +124,7 @@ function nickPrompt(then){
 }
 function account(){
   var a=auth(), last=+get(LK)||0;
-  var box=modal('<h3>'+esc(a.nick||a.name)+'</h3><p class="fa-sm">Ник в рейтинге: <b>'+(a.nick?esc(a.nick):'не выбран')+'</b> · <button type="button" class="fa-link" id="faNk" style="display:inline">'+(a.nick?'сменить':'придумать')+'</button></p><p>'+(a.username?'Telegram @'+esc(a.username)+'. ':'')+'Прогресс сохраняется в аккаунте и подтягивается на любом устройстве, где ты вошёл.</p><p class="fa-sm">Раз в день бот напоминает про серию, если цель дня не выполнена. Выключить — напиши боту /stop.</p><p class="fa-sm" id="faLast">'+(last?'Последняя синхронизация: '+new Date(last).toLocaleString('ru-RU'):'Ещё не синхронизировалось')+'</p><div class="fa-row"><button type="button" class="fa-btn" id="faSync">Синхронизировать</button><button type="button" class="fa-sec" id="faOut">Выйти</button></div><button type="button" class="fa-link" id="faDel">Удалить мои данные с сервера</button>');
+  var box=modal('<h3>'+esc(a.nick||a.name)+'</h3><div class="fa-nick"><span>Ник в рейтинге: <b>'+(a.nick?esc(a.nick):'не выбран')+'</b></span><button type="button" class="fa-sec" id="faNk">'+(a.nick?'Сменить ник':'Придумать ник')+'</button></div><p>'+(a.username?'Telegram @'+esc(a.username)+'. ':'')+'Прогресс сохраняется в аккаунте и подтягивается на любом устройстве, где ты вошёл.</p><p class="fa-sm">Раз в день бот напоминает про серию, если цель дня не выполнена. Выключить — напиши боту /stop.</p><p class="fa-sm" id="faLast">'+(last?'Последняя синхронизация: '+new Date(last).toLocaleString('ru-RU'):'Ещё не синхронизировалось')+'</p><div class="fa-row"><button type="button" class="fa-btn" id="faSync">Синхронизировать</button><button type="button" class="fa-sec" id="faOut">Выйти</button></div><button type="button" class="fa-link" id="faDel">Удалить мои данные с сервера</button>');
   box.querySelector('#faNk').onclick=function(){ nickPrompt(); };
   box.querySelector('#faSync').onclick=function(){ sync().then(function(){ var l=+get(LK)||0; box.querySelector('#faLast').textContent='Последняя синхронизация: '+new Date(l).toLocaleString('ru-RU'); }); };
   box.querySelector('#faOut').onclick=function(){ logout(); closeModal(); toast('Ты вышел. Статистика осталась в этом браузере'); };
@@ -139,7 +139,8 @@ function modal(html){
   closeModal(); var ov=document.createElement('div'); ov.className='fa-ov'; ov.id='faOv';
   ov.innerHTML='<div class="fa-box" role="dialog" aria-modal="true"><button type="button" class="fa-x" aria-label="Закрыть">×</button>'+html+'</div>';
   ov.addEventListener('click',function(e){ if(e.target===ov||e.target.classList.contains('fa-x')) closeModal(); });
-  document.body.appendChild(ov); return ov.querySelector('.fa-box');
+  document.body.appendChild(ov); document.addEventListener('keydown',function esc(e){ if(e.key==='Escape'){ closeModal(); document.removeEventListener('keydown',esc); } });
+  return ov.querySelector('.fa-box');
 }
 function closeModal(){ clearInterval(pollT); var o=document.getElementById('faOv'); if(o) o.remove(); }
 var stateEl=null;

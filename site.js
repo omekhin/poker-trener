@@ -66,4 +66,4 @@
 /* Установка как приложение и офлайн-режим */
 if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost')){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
 /* вход и синхронизация прогресса */
-(function(){ ['share.js?v=11','auth.js?v=11'].forEach(function(f){ var s=document.createElement('script'); s.src=f; s.defer=true; document.head.appendChild(s); }); })();
+(function(){ ['share.js?v=12','auth.js?v=12'].forEach(function(f){ var s=document.createElement('script'); s.src=f; s.defer=true; document.head.appendChild(s); }); })();
