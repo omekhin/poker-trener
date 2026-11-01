@@ -91,6 +91,7 @@ function sync(o){
 /* --- login with a Telegram bot deep link: works even where telegram.org scripts are slow --- */
 var pollT=null;
 function login(){
+  if(window.Flop&&Flop.ev) Flop.ev('login_start');
   var box=modal('<h3>Сохраняй прогресс</h3><p>Войди через Telegram — статистика, серия дней, ошибки и уроки сохранятся в аккаунте. Их будет видно и с телефона, и с компьютера.</p><p class="fa-st" id="faSt">Готовлю ссылку…</p>');
   api('start').then(function(r){
     var st=box.querySelector('#faSt');

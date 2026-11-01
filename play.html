@@ -631,6 +631,7 @@ async function finishHand(){
     for(const p of busted){ p.out=true; p.place=remaining--; p.act='выбыл'; L(`${p.name} finished the tournament in ${p.place} place`); }
     if(hero().out) G.over={place:hero().place};
     else if(alive().length===1) { hero().place=1; G.over={place:1}; L(`Hero wins the tournament`); }
+    if(G.over&&!testMode&&window.Flop){ Flop.ev('tour_end',{place:G.over.place}); if(G.over.place===1) Flop.ev('tour_win'); }
     if(G.over){ S.place=G.over.place; try{ const ts=JSON.parse(localStorage.getItem('pt_tours')||'[]'); ts.unshift({date:new Date().toISOString().slice(0,10),place:G.over.place,hands:T.hands}); localStorage.setItem('pt_tours',JSON.stringify(ts.slice(0,30))); }catch(e){} }
   }
   const h=hero(); const net=h.stack-h.handStart;
