@@ -104,7 +104,7 @@ function login(){
       if(Date.now()-t0>10*60*1000){ clearInterval(pollT); st.innerHTML='<span class="fa-w">Ссылка устарела. Закрой окно и нажми «Войти» ещё раз.</span>'; return; }
       api('poll',{q:'&code='+encodeURIComponent(r.code)}).then(function(p){
         if(p.token){ clearInterval(pollT); try{ localStorage.setItem(AK,JSON.stringify({token:p.token,name:p.name,username:p.username})); }catch(e){}
-          closeModal(); nav(); toast('Вход выполнен: '+p.name+'. Прогресс сохраняется в аккаунте'); if(window.Flop&&Flop.ev) Flop.ev('login');
+          closeModal(); nav(); toast('Вход выполнен: '+p.name+'. Прогресс сохраняется в аккаунте'); if(window.Flop&&Flop.ev) Flop.ev('login_ok');
           firstSync=true; sync().then(function(){ return api('me'); }).then(function(m){ saveNick(m&&m.nick); document.dispatchEvent(new Event('flop-login')); if(!(m&&m.nick)) setTimeout(nickPrompt,600); }).catch(function(){}); }
         else if(p.expired){ clearInterval(pollT); st.innerHTML='<span class="fa-w">Ссылка устарела. Закрой окно и нажми «Войти» ещё раз.</span>'; }
       }).catch(function(){});
