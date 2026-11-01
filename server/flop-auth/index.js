@@ -170,6 +170,50 @@ function top(b, me) {
   };
 }
 
+/* ---------- «Поделиться»: своя ссылка с картинкой результата для превью в Telegram ---------- */
+const SITE_URL = 'https://poker-trener.ru/';
+const escH = s => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+async function s3bin(ctx, method, key, buf, type) {
+  const headers = { Authorization: 'Bearer ' + await iam(ctx) };
+  if (buf) headers['Content-Type'] = type;
+  const r = await fetch(`https://storage.yandexcloud.net/${BUCKET}/${key}`, { method, headers, body: buf });
+  if (method === 'GET' && r.status === 404) return null;
+  if (!r.ok) throw new Error(`storage ${method} ${key}: ${r.status}`);
+  return method === 'GET' ? Buffer.from(await r.arrayBuffer()) : true;
+}
+function selfUrl(ctx) { return process.env.PUBLIC_URL || (ctx && ctx.functionName ? `https://functions.yandexcloud.net/${ctx.functionName}` : 'https://functions.yandexcloud.net/d4ec4fhnffjodos3c9ki'); }
+async function shareCard(ev, ctx) {
+  let p; try { p = JSON.parse(bodyOf(ev)); } catch (e) { return json(ev, 400, { error: 'bad_json' }); }
+  const m = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(p && p.img || '');
+  if (!m) return json(ev, 400, { error: 'bad_img' });
+  const buf = Buffer.from(m[1], 'base64');
+  if (buf.length > 600 * 1024 || buf[0] !== 0xFF || buf[1] !== 0xD8) return json(ev, 400, { error: 'bad_img' });
+  const id = crypto.randomBytes(6).toString('base64url');
+  const meta = { t: String(p.t || 'Мой результат').slice(0, 90), d: String(p.d || '').slice(0, 200), k: String(p.k || 'card').replace(/[^a-z_]/g, '').slice(0, 20), at: Date.now() };
+  await s3bin(ctx, 'PUT', `s/${id}.jpg`, buf, 'image/jpeg');
+  await s3(ctx, 'PUT', `s/${id}.json`, JSON.stringify(meta));
+  return json(ev, 200, { id, url: `${selfUrl(ctx)}?s=${id}` });
+}
+async function sharePage(ev, ctx, id) {
+  const meta = await s3(ctx, 'GET', `s/${id}.json`);
+  const dest = SITE_URL + '?utm_source=share&utm_medium=' + encodeURIComponent((meta && meta.k) || 'card');
+  const t = meta ? meta.t : 'Флоп — покерный тренажёр с тренером';
+  const d = meta && meta.d ? meta.d : 'Бесплатный покерный тренажёр: стол на 9 игроков, тренер объясняет каждое решение.';
+  const img = meta ? `${selfUrl(ctx)}?si=${id}` : SITE_URL + 'og.png';
+  const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escH(t)} — Флоп</title>
+<meta property="og:type" content="website"><meta property="og:site_name" content="Флоп"><meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="${escH(t)}"><meta property="og:description" content="${escH(d)}">
+<meta property="og:image" content="${escH(img)}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${escH(img)}">
+<meta http-equiv="refresh" content="0;url=${escH(dest)}"></head><body style="font-family:system-ui;padding:24px"><p><a href="${escH(dest)}">Открыть Флоп — покерный тренажёр</a></p><script>location.replace(${JSON.stringify(dest)})</script></body></html>`;
+  return { statusCode: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=3600' }, body: html };
+}
+async function shareImage(ev, ctx, id) {
+  const buf = await s3bin(ctx, 'GET', `s/${id}.jpg`);
+  if (!buf) return { statusCode: 302, headers: { Location: SITE_URL + 'og.png' }, body: '' };
+  return { statusCode: 200, headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'public, max-age=31536000, immutable' }, body: buf.toString('base64'), isBase64Encoded: true };
+}
+
 /* ---------- основной обработчик ---------- */
 module.exports.handler = async function (ev, ctx) {
   try {
@@ -179,6 +223,10 @@ module.exports.handler = async function (ev, ctx) {
     if (ev.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors(ev), body: '' };
     const q = ev.queryStringParameters || {};
     const a = q.a || '';
+    const sid = typeof q.s === 'string' && /^[A-Za-z0-9_-]{6,12}$/.test(q.s) ? q.s : null, siid = typeof q.si === 'string' && /^[A-Za-z0-9_-]{6,12}$/.test(q.si) ? q.si : null;
+    if (sid) return await sharePage(ev, ctx, sid);
+    if (siid) return await shareImage(ev, ctx, siid);
+    if (a === 'card' && ev.httpMethod === 'POST') return await shareCard(ev, ctx);
     if (a === 'tg') return await telegram(ev, ctx);
     if (a === 'remind') {                      // ручная проверка напоминаний: ?a=remind&key=WEBHOOK_SECRET
       if (!WH_SECRET || q.key !== WH_SECRET) return json(ev, 403, { error: 'forbidden' });

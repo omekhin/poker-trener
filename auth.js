@@ -160,7 +160,7 @@ function nav(){
 
 window.Flop=window.Flop||{};
 var readyRes, ready=new Promise(function(r){ readyRes=r; }); setTimeout(function(){ readyRes(); },8000);
-Flop.auth={login:login,logout:logout,sync:sync,user:auth,api:api,nick:nickPrompt,ready:ready};
+Flop.auth={login:login,logout:logout,sync:sync,user:auth,api:api,nick:nickPrompt,ready:ready,apiUrl:API};
 function boot(){ nav(); var a=auth(); if(!a) readyRes(); if(a){ sync().then(readyRes,readyRes); if(a.nick===undefined) api('me').then(function(m){ saveNick(m&&m.nick); }).catch(function(){}); } document.dispatchEvent(new Event('flop-auth')); }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 document.addEventListener('visibilitychange',function(){ if(!auth()) return; if(document.visibilityState==='hidden'&&timer){ clearTimeout(timer); timer=null; sync(); } else if(document.visibilityState==='visible'&&Date.now()-(+get(LK)||0)>60000) sync(); });

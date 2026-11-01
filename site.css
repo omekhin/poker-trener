@@ -58,3 +58,4 @@ button,a,.card,.slot,.dc,.hc,.c,.k{touch-action:manipulation;-webkit-tap-highlig
 .fa-in:focus{outline:2px solid var(--accent);outline-offset:1px}
 .fa-nick{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--bg);border-radius:12px;padding:10px 12px;font-size:14px}
 .fa-nick .fa-sec{padding:8px 12px;font-size:14px}
+.sh-wait{opacity:.6;pointer-events:none}
