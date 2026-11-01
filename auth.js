@@ -56,7 +56,7 @@ function mergeOne(k,l,r){
 /* --- server calls --- */
 function api(a,opt){
   opt=opt||{}; var au=auth(), h={};
-  if(au&&au.token) h.Authorization='Bearer '+au.token;
+  if(au&&au.token) h['X-Flop-Auth']=au.token;   // не Authorization: его перехватывает Яндекс Облако
   if(opt.body) h['Content-Type']='text/plain';
   return fetch(API+(API.indexOf('?')>=0?'&':'?')+'a='+a+(opt.q||''),{method:opt.body?'POST':'GET',headers:h,body:opt.body?JSON.stringify(opt.body):undefined,keepalive:!!opt.keepalive})
     .then(function(r){ if(r.status===401&&au&&au.token){ logout(true); throw new Error('unauthorized'); } if(!r.ok) throw new Error('http '+r.status); return r.json(); });

@@ -57,7 +57,7 @@ function readToken(t) {
 const hdr = (ev, name) => { const h = ev.headers || {}; const k = Object.keys(h).find(x => x.toLowerCase() === name); return k ? h[k] : ''; };
 function cors(ev) {
   const o = hdr(ev, 'origin');
-  return o && ORIGINS.includes(o) ? { 'Access-Control-Allow-Origin': o, 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Vary': 'Origin' } : {};
+  return o && ORIGINS.includes(o) ? { 'Access-Control-Allow-Origin': o, 'Access-Control-Allow-Headers': 'Content-Type, X-Flop-Auth', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Vary': 'Origin' } : {};
 }
 const json = (ev, code, obj) => ({ statusCode: code, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...cors(ev) }, body: JSON.stringify(obj) });
 function bodyOf(ev) { if (!ev.body) return ''; return ev.isBase64Encoded ? Buffer.from(ev.body, 'base64').toString() : ev.body; }
@@ -200,7 +200,7 @@ module.exports.handler = async function (ev, ctx) {
       return json(ev, 200, { token, name: rec.name, username: rec.username });
     }
 
-    const auth = readToken((hdr(ev, 'authorization') || '').replace(/^Bearer\s+/i, ''));
+    const auth = readToken(hdr(ev, 'x-flop-auth') || q.t || (hdr(ev, 'authorization') || '').replace(/^Bearer\s+/i, ''));
     if (a === 'top') return json(ev, 200, top(await board(ctx), auth && auth.uid));   // рейтинг виден всем
     if (!auth) return json(ev, 401, { error: 'unauthorized' });
     const key = `users/${auth.uid}.json`;
